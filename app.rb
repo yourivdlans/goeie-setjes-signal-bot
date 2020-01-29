@@ -2,6 +2,10 @@ require 'sinatra'
 require 'open3'
 
 class GoeieSetjesSignalBotApp < Sinatra::Base
+  configure :production, :development do
+    enable :logging
+  end
+
   get '/messages.json' do
     content_type :json
 
@@ -11,6 +15,8 @@ class GoeieSetjesSignalBotApp < Sinatra::Base
 
     Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
       while line = stdout.gets
+        logger.info(line)
+
         json_message = parse_line_to_json(line)
         next if json_message.nil?
 
@@ -29,6 +35,8 @@ class GoeieSetjesSignalBotApp < Sinatra::Base
   def parse_line_to_json(line)
     JSON.parse(line)
   rescue JSON::ParserError
+    logger.info("Failed to parse line to json")
+
     nil
   end
 end
