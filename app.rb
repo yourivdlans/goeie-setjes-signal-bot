@@ -11,7 +11,8 @@ class GoeieSetjesSignalBotApp < Sinatra::Base
 
     Open3.popen3(cmd) do |stdin, stdout, stderr, wait_thr|
       while line = stdout.gets
-        json_message = JSON.parse(line)
+        json_message = parse_line_to_json(line)
+        next if json_message.nil?
 
         group_id = json_message.dig('envelope', 'dataMessage', 'groupInfo', 'groupId') || json_message.dig('envelope', 'syncMessage', 'sentMessage', 'groupInfo', 'groupId')
         next if group_id.nil? || group_id == '' || group_id != ENV.fetch('SIGNAL_GROUP_ID')
@@ -23,5 +24,11 @@ class GoeieSetjesSignalBotApp < Sinatra::Base
     return {}.to_json if exposed_messages.length == 0
 
     exposed_messages.join("\n")
+  end
+
+  def parse_line_to_json(line)
+    JSON.parse(line)
+  rescue JSON::ParserError
+    nil
   end
 end
