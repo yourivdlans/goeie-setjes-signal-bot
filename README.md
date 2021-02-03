@@ -2,21 +2,35 @@
 
 ## Build and test image locally
 
+Install `qrencode` if you haven't got it installed
+
+`brew install qrencode`
+
+Build image
+
 ```bash
 docker build . -t goeie-setjes/bot:latest
-docker create --name goeie-setjs-signal-bot goeie-setjes/bot:latest
+docker create --name goeie-setjes-signal-bot goeie-setjes/bot:latest
 ```
 
 Link a new device
 
 ```bash
-docker run -it --volumes-from goeie-setjs-signal-bot --entrypoint signal-cli goeie-setjes/bot:latest link -n "Goeie Setjes bot"
+docker run -it --volumes-from goeie-setjes-signal-bot --entrypoint signal-cli goeie-setjes/bot:latest link -n "Goeie Setjes bot"
+```
+
+Open a second terminal window/tab and copy/paste the `tsdevice` string from the link output into qrencode.
+
+Scan the output with Signal to link the device.
+
+```bash
+qrencode -o qrcode.png 'tsdevice:/?uuid=uuid&pub_key=pub_key' & open qrcode.png
 ```
 
 Start a webserver which exposes `/messages.json`
 
 ```bash
-docker run --volumes-from goeie-setjs-signal-bot -p 9292:9292 -e SIGNAL_USER_ACCOUNT=... -e SIGNAL_GROUP_ID=... goeie-setjes/bot:latest
+docker run --volumes-from goeie-setjes-signal-bot -p 9292:9292 -e SIGNAL_USER_ACCOUNT=... -e SIGNAL_GROUP_ID=... goeie-setjes/bot:latest
 ```
 
 ## How to deploy to dokku for the first time
