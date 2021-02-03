@@ -49,6 +49,15 @@ dokku storage:mount goeie-setjes-signal-bot /var/lib/dokku/data/storage/goeie-se
 dokku config:set goeie-setjes-signal-bot SIGNAL_USER_ACCOUNT=... SIGNAL_GROUP_ID=...
 ```
 
+## Link on dokku
+
+```bash
+dokku enter goeie-setjes-signal-bot
+signal-cli link -n "Goeie Setjes bot"
+```
+
+See: "Link a new device"
+
 ## How to update image for dokku
 
 ```bash
