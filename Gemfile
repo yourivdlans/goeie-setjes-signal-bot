@@ -7,4 +7,6 @@ end
 
 ruby '~> 2.6.5'
 
-gem 'sinatra', '~> 2.0'
+gem "ruby-dbus", "~> 0.16.0"
+
+gem "http", "~> 4.4"
