@@ -34,8 +34,22 @@ def post_signal_message(signal, group_id, sender, message)
                   ).post(ENV["GOEIE_SETJES_API"], json: json_body)
 
   if response.status.success?
-    signal.sendGroupMessage("Was für eine Scheiße ist das? ", [], group_id)
+    signal.sendGroupMessage("Was für eine Scheiße ist das?", [], group_id)
+  else
+    signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
   end
+end
+
+def get_random_item
+  response = HTTP.headers(
+                    "Accept" => "application/vnd.api+json",
+                    "Content-Type" => "application/vnd.api+json",
+                  ).get(ENV["GOEIE_SETJES_PUBLIC_API"] + "/api/random-item")
+
+
+  JSON.parse(response.body.to_s) if response.status.success?
+rescue JSON::ParserError
+  nil
 end
 
 def handle_message(signal, group_id, sender, message)
@@ -46,7 +60,16 @@ def handle_message(signal, group_id, sender, message)
   end
 
   if message == "!goedsetje"
-    signal.sendGroupMessage("https://www.youtube.com/watch?v=dQw4w9WgXcQ", [], group_id)
+    item = get_random_item
+
+    if item
+      attributes = item.dig("data", "attributes")
+      message = [attributes["fb-name"], "likes: #{attributes["likes-count"]}, plays: #{attributes["plays-count"]}", attributes["url"]].join("\n")
+
+      signal.sendGroupMessage(message, [], group_id)
+    else
+      signal.sendGroupMessage("ACHTUNG! wir konnten es nicht finden", [], group_id)
+    end
   end
 
   if /https?:\/\/|wwww\./.match?(message)
