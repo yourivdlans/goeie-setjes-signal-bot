@@ -8,7 +8,7 @@ signal-cli -u $SIGNAL_USER_ACCOUNT daemon &
 
 echo "Waiting for signal-cli daemon to be ready..."
 
-sleep 10
+sleep 20
 
 echo "Starting signal bot..."
 
