@@ -16,7 +16,7 @@ RUN mkdir /app
 WORKDIR /app
 
 ADD Gemfile* /app/
-RUN gem install bundler:2.0.2
+RUN gem install bundler:2.2.9
 RUN bundle install
 
 ADD . /app
