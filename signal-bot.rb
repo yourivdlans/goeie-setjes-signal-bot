@@ -72,7 +72,7 @@ def handle_message(signal, group_id, sender, message)
     end
   end
 
-  if /https?:\/\/|wwww\./.match?(message)
+  if /https?:\/\/|wwww\./.match?(message) && !message.include?(ENV["GOEIE_SETJES_PUBLIC_API"])
     post_signal_message(signal, group_id, sender, message)
   end
 end
