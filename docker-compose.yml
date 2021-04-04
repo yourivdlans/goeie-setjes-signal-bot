@@ -1,0 +1,16 @@
+version: '3.2'
+
+volumes:
+  data:
+
+services:
+  bot:
+    build:
+      context: .
+    environment:
+      SIGNAL_USER_ACCOUNT: ${SIGNAL_USER_ACCOUNT}
+      SIGNAL_GROUP_ID: ${SIGNAL_GROUP_ID}
+      GOEIE_SETJES_API: ${GOEIE_SETJES_API}
+      GOEIE_SETJES_API_TOKEN: ${GOEIE_SETJES_API_TOKEN}
+    volumes:
+      - data:/root/.local/share/signal-cli/data/
