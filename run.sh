@@ -12,4 +12,4 @@ sleep 20
 
 echo "Starting signal bot..."
 
-ruby signal-bot.rb
+ruby main.rb
