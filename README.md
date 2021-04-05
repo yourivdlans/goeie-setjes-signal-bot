@@ -32,6 +32,12 @@ Start signal bot
 docker-compose up
 ```
 
+## Running tests
+
+```bash
+ruby -Ilib:test signal_bot_test.rb
+```
+
 ## Debugging
 
 Enter docker container

@@ -17,7 +17,7 @@ WORKDIR /app
 
 ADD Gemfile* /app/
 RUN gem install bundler:2.2.9
-RUN bundle install
+RUN bundle install --without test
 
 ADD . /app
 
