@@ -12,5 +12,6 @@ services:
       SIGNAL_GROUP_ID: ${SIGNAL_GROUP_ID}
       GOEIE_SETJES_API: ${GOEIE_SETJES_API}
       GOEIE_SETJES_API_TOKEN: ${GOEIE_SETJES_API_TOKEN}
+      GOEIE_SETJES_PUBLIC_API: ${GOEIE_SETJES_PUBLIC_API}
     volumes:
       - data:/root/.local/share/signal-cli/data/
