@@ -1,4 +1,5 @@
 require "dbus"
+require "./signal_bot"
 
 SignalBot.config.public_api_endpoint = ENV.fetch("GOEIE_SETJES_PUBLIC_API")
 SignalBot.config.private_api_endpoint = ENV.fetch("GOEIE_SETJES_API")
@@ -23,7 +24,7 @@ signal.on_signal("SyncMessageReceived") do |timestamp, sender, destination, grou
   logger.info "group_id: #{group_id}"
   logger.info "Message: #{message}"
 
-  SignalBot.new(signal, group_id, sender, message).handle_message
+  SignalBot.new(signal, sender, group_id, message).handle_message
 end
 
 signal.on_signal("MessageReceived") do |timestamp, sender, group_id, message, _attachments|
@@ -32,7 +33,7 @@ signal.on_signal("MessageReceived") do |timestamp, sender, group_id, message, _a
   logger.info "group_id: #{group_id}"
   logger.info "Message: #{message}"
 
-  SignalBot.new(signal, group_id, sender, message).handle_message
+  SignalBot.new(signal, sender, group_id, message).handle_message
 end
 
 logger.info "Signal bot running..."
