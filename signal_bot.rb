@@ -64,10 +64,6 @@ class SignalBot
   end
 
   def add_item
-    post_signal_message
-  end
-
-  def post_signal_message
     json_body = {
       data: {
         type: "signal_messages",
