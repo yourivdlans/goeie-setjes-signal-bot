@@ -21,7 +21,10 @@ class SignalBot
   end
 
   def handle_message
-    return if group_id != signal_group_id
+    if group_id != signal_group_id
+      logger.info "Did not receive message from configured group"
+      return
+    end
 
     if message == "!help" || message == "!hilfe"
       help
@@ -47,6 +50,8 @@ class SignalBot
   end
 
   def help
+    logger.info "Send help message"
+
     signal.sendGroupMessage("Verfügbare Befehle:\n\n!goedsetje", [], group_id)
   end
 
@@ -57,8 +62,12 @@ class SignalBot
       attributes = item.dig("data", "attributes")
       response = [attributes["fb-name"], "likes: #{attributes["likes-count"]}, plays: #{attributes["plays-count"]}", attributes["url"]].join("\n")
 
+      logger.info "Send random item"
+
       signal.sendGroupMessage(response, [], group_id)
     else
+      logger.info "Random item could not be sent"
+
       signal.sendGroupMessage("ACHTUNG! wir konnten es nicht finden", [], group_id)
     end
   end
@@ -81,8 +90,12 @@ class SignalBot
     ).post(self.class.config.private_api_endpoint, json: json_body)
 
     if response.status.success?
+      logger.info "New item created"
+
       signal.sendGroupMessage("Was für eine Scheiße ist das?", [], group_id)
     else
+      logger.info "New item could not be created"
+
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
     end
   end
