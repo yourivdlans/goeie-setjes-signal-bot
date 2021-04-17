@@ -106,6 +106,7 @@ describe SignalBot do
       SignalBot.config.signal_group_id = "1 2 3"
       SignalBot.config.public_api_endpoint = "https://public-api"
       SignalBot.config.private_api_endpoint = "https://localhost"
+      SignalBot.config.private_api_token = "some-token"
     end
 
     it "posts item to api and responds with message" do
@@ -115,6 +116,7 @@ describe SignalBot do
           headers: {
             "Accept" => "application/vnd.api+json",
             "Content-Type" => "application/vnd.api+json",
+            "X-SIGNAL-BOT-API-TOKEN" => "some-token"
           }).
         to_return(status: 200)
 
@@ -134,6 +136,7 @@ describe SignalBot do
           headers: {
             "Accept" => "application/vnd.api+json",
             "Content-Type" => "application/vnd.api+json",
+            "X-SIGNAL-BOT-API-TOKEN" => "some-token"
           }).
         to_return(status: 500)
 
