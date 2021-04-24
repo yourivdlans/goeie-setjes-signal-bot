@@ -85,9 +85,9 @@ class SignalBot
     }
 
     response = HTTP.headers(
-      "Accept" => "application/vnd.api+json",
-      "Content-Type" => "application/vnd.api+json",
-      "X-SIGNAL-BOT-API-TOKEN" => self.class.config.private_api_token
+      default_headers.merge({
+        "X-SIGNAL-BOT-API-TOKEN" => self.class.config.private_api_token
+      })
     ).post(self.class.config.private_api_endpoint, json: json_body)
 
     if response.status.success?
@@ -102,13 +102,18 @@ class SignalBot
   end
 
   def get_random_item
-    response = HTTP.headers(
-      "Accept" => "application/vnd.api+json",
-      "Content-Type" => "application/vnd.api+json",
-    ).get(self.class.config.public_api_endpoint + "/api/random-item")
+    response = HTTP.headers(default_headers)
+                   .get(self.class.config.public_api_endpoint + "/api/random-item")
 
     JSON.parse(response.body.to_s) if response.status.success?
   rescue JSON::ParserError
     nil
+  end
+
+  def default_headers
+    {
+      "Accept" => "application/vnd.api+json",
+      "Content-Type" => "application/vnd.api+json",
+    }
   end
 end
