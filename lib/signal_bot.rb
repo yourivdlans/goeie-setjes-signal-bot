@@ -31,6 +31,8 @@ class SignalBot
       help
     elsif message == "!goedsetje"
       random_item
+    elsif /^!search\s.*?/.match?(message)
+      search_items(message.delete_prefix("!search").strip)
     elsif /https?:\/\/|wwww\./.match?(message) && !message.include?(self.class.config.public_api_endpoint)
       add_item
     end
@@ -53,7 +55,14 @@ class SignalBot
   def help
     logger.info "Send help message"
 
-    signal.sendGroupMessage("Verfügbare Befehle:\n\n!goedsetje", [], group_id)
+    response = <<-HELP
+Verfügbare Befehle:
+
+!goedsetje
+!search [something]
+HELP
+
+    signal.sendGroupMessage(response.strip, [], group_id)
   end
 
   def random_item
@@ -69,8 +78,38 @@ class SignalBot
     else
       logger.info "Random item could not be sent"
 
-      signal.sendGroupMessage("ACHTUNG! wir konnten es nicht finden", [], group_id)
+      signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten", [], group_id)
     end
+  end
+
+  def search_items(query)
+    results = get_search_results(query)
+
+    if results.nil?
+      logger.info "Search returned an error"
+
+      signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten", [], group_id)
+      return
+    end
+
+    data = results["data"]
+
+    if data.length.zero?
+      logger.info "Search retrieved zero results"
+
+      signal.sendGroupMessage("ACHTUNG! Wir konnten nichts finden", [], group_id)
+      return
+    end
+
+    response = data.map do |item|
+      attributes = item["attributes"]
+
+      "#{shorten(attributes["fb-name"], 40)} - #{attributes["url"]}"
+    end
+
+    logger.info "Send search results"
+
+    signal.sendGroupMessage(response.join("\n"), [], group_id)
   end
 
   def add_item
@@ -108,6 +147,29 @@ class SignalBot
     JSON.parse(response.body.to_s) if response.status.success?
   rescue JSON::ParserError
     nil
+  end
+
+  def get_search_results(query)
+    response = HTTP.headers(default_headers)
+                   .get(
+                     self.class.config.public_api_endpoint + "/api/items",
+                     params: {
+                       sort: "-likes-count,-plays-count",
+                       "page[limit]": 5,
+                       "filter[broken-link]": "false",
+                       "filter[name]": query
+                     }
+                   )
+
+    JSON.parse(response.body.to_s) if response.status.success?
+  rescue JSON::ParserError
+    nil
+  end
+
+  def shorten(string, length)
+    return string if string.length <= length
+
+    string[0..(length - 3)].strip + "..."
   end
 
   def default_headers
