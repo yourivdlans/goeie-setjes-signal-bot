@@ -1,4 +1,5 @@
 require "http"
+require "logger"
 require "dry-configurable"
 
 class SignalBot

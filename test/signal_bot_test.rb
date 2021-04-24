@@ -1,8 +1,6 @@
-require "minitest/autorun"
-require "webmock/minitest"
-require "dry/configurable/test_interface"
-require "byebug"
-require "./signal_bot"
+require "test_helper"
+
+require "signal_bot"
 
 describe SignalBot do
   before do
