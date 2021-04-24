@@ -35,7 +35,7 @@ docker-compose up
 ## Running tests
 
 ```bash
-ruby -Ilib:test signal_bot_test.rb
+rake test
 ```
 
 ## Debugging

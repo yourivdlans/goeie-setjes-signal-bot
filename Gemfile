@@ -18,4 +18,3 @@ group :test do
   gem "byebug", "~> 11.1"
   gem "webmock", "~> 3.12"
 end
-
