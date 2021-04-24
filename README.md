@@ -77,32 +77,25 @@ dbus-send --session --type=method_call  --print-reply --dest=org.asamk.Signal /o
 ## How to deploy to dokku for the first time
 
 ```bash
-ssh ubuntu@server
-git clone git@github.com:yourivdlans/goeie-setjes-signal-bot.git ~/goeie-setjes-signal-bot
-cd ~/goeie-setjes-signal-bot
-sudo docker build . -t dokku/goeie-setjes-signal-bot:latest
-sudo dokku tags:deploy goeie-setjes-signal-bot latest
-dokku ps:rebuild goeie-setjes
-dokku proxy:disable goeie-setjes-signal-bot
-dokku storage:mount goeie-setjes-signal-bot /var/lib/dokku/data/storage/goeie-setjes-signal-bot:/root/.local/share/signal-cli/data/
-dokku config:set goeie-setjes-signal-bot SIGNAL_USER_ACCOUNT=... SIGNAL_GROUP_ID=... GOEIE_SETJES_API=... GOEIE_SETJES_API_TOKEN=...
+ssh dokku@server apps:create goeie-setjes-signal-bot
+ssh dokku@server proxy:disable goeie-setjes-signal-bot
+ssh dokku@server storage:mount goeie-setjes-signal-bot /var/lib/dokku/data/storage/goeie-setjes-signal-bot:/root/.local/share/signal-cli/data/
+ssh dokku@server config:set goeie-setjes-signal-bot SIGNAL_USER_ACCOUNT=... SIGNAL_GROUP_ID=... GOEIE_SETJES_API=... GOEIE_SETJES_API_TOKEN=...
+git remote add dokku dokku@server:goeie-setjes-signal-bot
+git push dokku master
 ```
 
 ## Link Signal account on dokku
 
 ```bash
-dokku enter goeie-setjes-signal-bot
+ssh dokku@server enter goeie-setjes-signal-bot
 signal-cli link -n "Goeie Setjes bot"
 ```
 
 See: "Link a new device with Signal"
 
-## How to update image for dokku
+## How to deploy updates
 
 ```bash
-ssh ubuntu@server
-cd ~/goeie-setjes-signal-bot
-git pull
-sudo docker build . -t dokku/goeie-setjes-signal-bot:latest
-sudo dokku tags:deploy goeie-setjes-signal-bot latest
+git push dokku master
 ```
