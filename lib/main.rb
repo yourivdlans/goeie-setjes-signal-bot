@@ -1,5 +1,5 @@
 require "dbus"
-require "signal_bot"
+require "./lib/signal_bot"
 
 SignalBot.config.public_api_endpoint = ENV.fetch("GOEIE_SETJES_PUBLIC_API")
 SignalBot.config.private_api_endpoint = ENV.fetch("GOEIE_SETJES_API")
