@@ -32,6 +32,12 @@ Start signal bot
 docker-compose up
 ```
 
+## Running tests
+
+```bash
+rake test
+```
+
 ## Debugging
 
 Enter docker container
