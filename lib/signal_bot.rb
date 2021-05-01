@@ -31,6 +31,8 @@ class SignalBot
       help
     elsif message == "!goedsetje"
       random_item
+    elsif message == "!stats"
+      stats
     elsif /^!search\s.*?/.match?(message)
       search_items(message.delete_prefix("!search").strip)
     elsif /https?:\/\/|wwww\./.match?(message) && !message.include?(self.class.config.public_api_endpoint)
@@ -60,6 +62,7 @@ Verfügbare Befehle:
 
 !goedsetje
 !search [something]
+!stats
 HELP
 
     signal.sendGroupMessage(response.strip, [], group_id)
@@ -80,6 +83,37 @@ HELP
 
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten", [], group_id)
     end
+  end
+
+  def stats
+    results = get_stats_results
+
+    if results.nil? || results["data"].empty?
+      logger.info "Stats returned an error"
+
+      signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten", [], group_id)
+      return
+    end
+
+    data = results["data"]
+    top_items = data["top_items"]
+
+    stats_response = "Total #{data["likes_count"]} ❤️\nTotal #{data["plays_count"]} 🎵"
+
+    if !top_items.nil? && top_items.length.positive?
+      top_items_response = top_items.map.with_index do |item, index|
+        <<-TOPITEM
+#{index+1}. #{shorten(item["name"], 40)} (#{item["likes_count"]} ❤️ / #{item["plays_count"]} 🎵)
+#{item["url"]}
+TOPITEM
+      end.join("\n")
+
+      stats_response += "\n\nTop 5:\n" + top_items_response.strip
+    end
+
+    logger.info "Send stats results"
+
+    signal.sendGroupMessage(stats_response, [], group_id)
   end
 
   def search_items(query)
@@ -143,6 +177,15 @@ HELP
   def get_random_item
     response = HTTP.headers(default_headers)
                    .get(self.class.config.public_api_endpoint + "/api/random-item")
+
+    JSON.parse(response.body.to_s) if response.status.success?
+  rescue JSON::ParserError
+    nil
+  end
+
+  def get_stats_results
+    response = HTTP.headers(default_headers)
+                   .get(self.class.config.public_api_endpoint + "/api/v2/stats.json?include=most_liked_item,most_played_item,top_items")
 
     JSON.parse(response.body.to_s) if response.status.success?
   rescue JSON::ParserError
