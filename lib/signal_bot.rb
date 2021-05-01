@@ -138,12 +138,15 @@ TOPITEM
     response = data.map do |item|
       attributes = item["attributes"]
 
-      "#{shorten(attributes["fb-name"], 40)} - #{attributes["url"]}"
+      <<-RESPONSE
+#{shorten(attributes["fb-name"], 40)} (#{attributes["likes-count"]} ❤️ / #{attributes["plays-count"]} 🎵)
+#{attributes["url"]}
+RESPONSE
     end
 
     logger.info "Send search results"
 
-    signal.sendGroupMessage(response.join("\n"), [], group_id)
+    signal.sendGroupMessage(response.join("\n").strip, [], group_id)
   end
 
   def add_item

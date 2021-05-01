@@ -204,13 +204,17 @@ RESPONSE
         {
           attributes: {
             "fb-name" => "an item with more than 40 characters lorum ipsum",
-            "url" => "https://localhost/plays/1"
+            "url" => "https://localhost/plays/1",
+            "likes-count" => 1,
+            "plays-count" => 2
           }
         },
         {
           attributes: {
             "fb-name" => "some item",
-            "url" => "https://localhost/plays/2"
+            "url" => "https://localhost/plays/2",
+            "likes-count" => 3,
+            "plays-count" => 4
           }
         }
       ]
@@ -224,8 +228,11 @@ RESPONSE
         to_return(status: 200, body: found_items.to_json)
 
       response_message = <<-RESPONSE
-an item with more than 40 characters l... - https://localhost/plays/1
-some item - https://localhost/plays/2
+an item with more than 40 characters l... (1 ❤️ / 2 🎵)
+https://localhost/plays/1
+
+some item (3 ❤️ / 4 🎵)
+https://localhost/plays/2
 RESPONSE
 
       signal = Minitest::Mock.new
