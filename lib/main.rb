@@ -16,6 +16,8 @@ class Main
   end
 
   def run
+    logger.info "Attaching to dbus..."
+
     setup
     handle_messages
     start_loop
@@ -26,12 +28,19 @@ class Main
   attr_reader :session_bus, :dbus, :signal, :logger
 
   def setup
-    logger.info "Attaching to dbus..."
+    retries = 0
 
     signal_service = session_bus.service("org.asamk.Signal")
     @signal = signal_service.object("/org/asamk/Signal")
     @signal.introspect
     @signal.default_iface = "org.asamk.Signal"
+  rescue DBus::Error
+    retries += 1
+    sleep 1
+
+    logger.info "Still trying to attach to dbus..."
+
+    retry if retries < 20
   end
 
   def handle_messages
