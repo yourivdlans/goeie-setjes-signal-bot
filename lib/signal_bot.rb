@@ -35,6 +35,8 @@ class SignalBot
       stats
     elsif /^!search\s.*?/.match?(message)
       search_items(message.delete_prefix("!search").strip)
+    elsif message.start_with?("!")
+      unknown_command(message)
     elsif /https?:\/\/|wwww\./.match?(message) && !message.include?(self.class.config.public_api_endpoint)
       add_item
     end
@@ -147,6 +149,14 @@ RESPONSE
     logger.info "Send search results"
 
     signal.sendGroupMessage(response.join("\n").strip, [], group_id)
+  end
+
+  def unknown_command(message)
+    words = message.split(" ")
+
+    return if words.length.zero?
+
+    signal.sendGroupMessage("Du bist ein #{words[0].delete_prefix("!")}", [], group_id)
   end
 
   def add_item

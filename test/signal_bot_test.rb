@@ -281,6 +281,22 @@ RESPONSE
     end
   end
 
+  describe "when an unknown command is received" do
+    before do
+      SignalBot.config.signal_group_id = "1 2 3"
+    end
+
+    it "responds with message" do
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, ["Du bist ein like", [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1")
+      signal_bot.handle_message
+
+      signal.verify
+    end
+  end
+
   describe "when a message with a url is received" do
     before do
       SignalBot.config.signal_group_id = "1 2 3"
