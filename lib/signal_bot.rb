@@ -63,7 +63,7 @@ class SignalBot
 Verfügbare Befehle:
 
 !goedsetje
-!search [something]
+!search [something] [page:n]
 !stats
 HELP
 
@@ -119,7 +119,13 @@ TOPITEM
   end
 
   def search_items(query)
-    results = get_search_results(query)
+    if page_number_query = query.slice!(/page:\d{1,2}/)
+      page_number = page_number_query.split(":").last.to_i
+    else
+      page_number = 1
+    end
+
+    results = get_search_results(query.strip, page: page_number)
 
     if results.nil?
       logger.info "Search returned an error"
@@ -141,14 +147,22 @@ TOPITEM
       attributes = item["attributes"]
 
       <<-RESPONSE
-#{shorten(attributes["fb-name"], 40)} (#{attributes["likes-count"]} ❤️ / #{attributes["plays-count"]} 🎵)
+#{shorten(attributes["name"], 40)} (#{attributes["likes_count"]} ❤️ / #{attributes["plays_count"]} 🎵)
 #{attributes["url"]}
 RESPONSE
+    end.join("\n").strip
+
+    total_count = results.dig("meta", "stats", "total", "count")
+
+    if total_count && total_count > 5
+      total_pages = (total_count / 5.0).ceil
+
+      response << "\n\nAnzahl der Suchergebnisse: #{total_count}\nSeite: #{page_number}/#{total_pages}"
     end
 
     logger.info "Send search results"
 
-    signal.sendGroupMessage(response.join("\n").strip, [], group_id)
+    signal.sendGroupMessage(response, [], group_id)
   end
 
   def unknown_command(message)
@@ -205,15 +219,17 @@ RESPONSE
     nil
   end
 
-  def get_search_results(query)
+  def get_search_results(query, page: 1)
     response = HTTP.headers(default_headers)
                    .get(
-                     self.class.config.public_api_endpoint + "/api/items",
+                     self.class.config.public_api_endpoint + "/api/v2/items",
                      params: {
-                       sort: "-likes-count,-plays-count",
-                       "page[limit]": 5,
-                       "filter[broken-link]": "false",
-                       "filter[name]": query
+                       sort: "-likes_count,-plays_count",
+                       "page[number]": page,
+                       "page[size]": 5,
+                       "filter[broken_link]": "false",
+                       "filter[name][search]": query,
+                       "stats[total]": "count"
                      }
                    )
 

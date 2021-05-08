@@ -19,7 +19,7 @@ describe SignalBot do
     before do
       SignalBot.config.signal_group_id = "1 2 3"
 
-      @help_response = "Verfügbare Befehle:\n\n!goedsetje\n!search [something]\n!stats"
+      @help_response = "Verfügbare Befehle:\n\n!goedsetje\n!search [something] [page:n]\n!stats"
     end
 
     it "responds with the help text for !help" do
@@ -196,36 +196,36 @@ RESPONSE
     before do
       SignalBot.config.signal_group_id = "1 2 3"
       SignalBot.config.public_api_endpoint = "https://localhost"
-    end
 
-    it "responds with search results" do
-      found_items = {}
-      found_items[:data] = [
+      @search_result = {}
+      @search_result[:data] = [
         {
           attributes: {
-            "fb-name" => "an item with more than 40 characters lorum ipsum",
+            "name" => "an item with more than 40 characters lorum ipsum",
             "url" => "https://localhost/plays/1",
-            "likes-count" => 1,
-            "plays-count" => 2
+            "likes_count" => 1,
+            "plays_count" => 2
           }
         },
         {
           attributes: {
-            "fb-name" => "some item",
+            "name" => "some item",
             "url" => "https://localhost/plays/2",
-            "likes-count" => 3,
-            "plays-count" => 4
+            "likes_count" => 3,
+            "plays_count" => 4
           }
         }
       ]
+    end
 
-      stub_request(:get, "https://localhost/api/items?filter%5Bbroken-link%5D=false&filter%5Bname%5D=something&page%5Blimit%5D=5&sort=-likes-count,-plays-count").
+    it "responds with search results" do
+      stub_request(:get, "https://localhost/api/v2/items?filter%5Bbroken_link%5D=false&filter%5Bname%5D%5Bsearch%5D=something&page%5Bnumber%5D=1&page%5Bsize%5D=5&sort=-likes_count,-plays_count&stats%5Btotal%5D=count").
         with(
           headers: {
             "Accept" => "application/vnd.api+json",
             "Content-Type" => "application/vnd.api+json",
           }).
-        to_return(status: 200, body: found_items.to_json)
+        to_return(status: 200, body: @search_result.to_json)
 
       response_message = <<-RESPONSE
 an item with more than 40 characters l... (1 ❤️ / 2 🎵)
@@ -244,8 +244,45 @@ RESPONSE
       signal.verify
     end
 
+    it "responds with total amount of results and page info" do
+      @search_result[:meta] = {
+        stats: {
+          total: {
+            count: 39
+          }
+        }
+      }
+
+      stub_request(:get, "https://localhost/api/v2/items?filter%5Bbroken_link%5D=false&filter%5Bname%5D%5Bsearch%5D=something&page%5Bnumber%5D=2&page%5Bsize%5D=5&sort=-likes_count,-plays_count&stats%5Btotal%5D=count").
+        with(
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+          }).
+        to_return(status: 200, body: @search_result.to_json)
+
+      response_message = <<-RESPONSE
+an item with more than 40 characters l... (1 ❤️ / 2 🎵)
+https://localhost/plays/1
+
+some item (3 ❤️ / 4 🎵)
+https://localhost/plays/2
+
+Anzahl der Suchergebnisse: 39
+Seite: 2/8
+RESPONSE
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something page:2")
+      signal_bot.handle_message
+
+      signal.verify
+    end
+
     it "responds with a message about zero results" do
-      stub_request(:get, "https://localhost/api/items?filter%5Bbroken-link%5D=false&filter%5Bname%5D=something&page%5Blimit%5D=5&sort=-likes-count,-plays-count").
+      stub_request(:get, "https://localhost/api/v2/items?filter%5Bbroken_link%5D=false&filter%5Bname%5D%5Bsearch%5D=something&page%5Bnumber%5D=1&page%5Bsize%5D=5&sort=-likes_count,-plays_count&stats%5Btotal%5D=count").
         with(
           headers: {
             "Accept" => "application/vnd.api+json",
@@ -263,7 +300,7 @@ RESPONSE
     end
 
     it "responds with an error" do
-      stub_request(:get, "https://localhost/api/items?filter%5Bbroken-link%5D=false&filter%5Bname%5D=something&page%5Blimit%5D=5&sort=-likes-count,-plays-count").
+      stub_request(:get, "https://localhost/api/v2/items?filter%5Bbroken_link%5D=false&filter%5Bname%5D%5Bsearch%5D=something&page%5Bnumber%5D=1&page%5Bsize%5D=5&sort=-likes_count,-plays_count&stats%5Btotal%5D=count").
         with(
           headers: {
             "Accept" => "application/vnd.api+json",
