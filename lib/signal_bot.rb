@@ -35,6 +35,8 @@ class SignalBot
       stats
     elsif /^!search\s.*?/.match?(message)
       search_items(message.delete_prefix("!search").strip)
+    elsif /^!like\s.*?/.match?(message)
+      like_item(message.delete_prefix("!like").strip)
     elsif message.start_with?("!")
       unknown_command(message)
     elsif /https?:\/\/|wwww\./.match?(message) && !message.include?(self.class.config.public_api_endpoint)
@@ -165,6 +167,47 @@ RESPONSE
     signal.sendGroupMessage(response, [], group_id)
   end
 
+  def like_item(item_id)
+    unless is_integer?(item_id)
+      signal.sendGroupMessage("NEIN!", [], group_id)
+      return
+    end
+
+    json_body = {
+      data: {
+        type: "likes",
+        attributes: {
+          item_id: item_id
+        }
+      }
+    }
+
+    response = HTTP.headers(
+      default_headers.merge({
+        "X-SIGNAL-ACCOUNT" => sender
+      })
+    ).post(self.class.config.public_api_endpoint + "/api/v2/likes", json: json_body)
+
+    if response.status.success? || response.status.client_error?
+      logger.info "#{sender} liked #{item_id}"
+
+      liked_item = get_item(item_id)
+
+      return if liked_item.nil?
+
+      attributes = liked_item.dig("data", "attributes")
+      response = [attributes["name"], "likes: #{attributes["likes_count"]}, plays: #{attributes["plays_count"]}", attributes["url"]].join("\n")
+
+      logger.info "Send liked item"
+
+      signal.sendGroupMessage(response, [], group_id)
+    else
+      logger.info "#{sender} could not like item #{item_id}"
+
+      signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
+    end
+  end
+
   def unknown_command(message)
     words = message.split(" ")
 
@@ -199,6 +242,14 @@ RESPONSE
 
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
     end
+  end
+
+  def get_item(item_id)
+    response = HTTP.get(self.class.config.public_api_endpoint + "/api/v2/items/#{item_id}")
+
+    JSON.parse(response.body.to_s) if response.status.success?
+  rescue JSON::ParserError
+    nil
   end
 
   def get_random_item
@@ -249,5 +300,13 @@ RESPONSE
       "Accept" => "application/vnd.api+json",
       "Content-Type" => "application/vnd.api+json",
     }
+  end
+
+  def is_integer?(obj)
+    Integer(obj)
+
+    true
+  rescue ArgumentError
+    false
   end
 end
