@@ -173,22 +173,20 @@ RESPONSE
       return
     end
 
-    json_body = {
-      data: {
-        type: "likes",
-        attributes: {
-          item_id: item_id
-        }
-      }
-    }
+    like_response = get_like_results(item_id)
+    json_like_response = parse_json(like_response.body.to_s)
 
-    response = HTTP.headers(
-      default_headers.merge({
-        "X-SIGNAL-ACCOUNT" => sender
-      })
-    ).post(self.class.config.public_api_endpoint + "/api/v2/likes", json: json_body)
+    validation_error_codes = json_like_response&.dig("errors")&.map { |error| error.dig("meta", "code") }&.compact
 
-    if response.status.success? || response.status.client_error?
+    if like_response.status.client_error? && validation_error_codes&.include?("blank")
+      logger.info "item##{item_id} does not exists"
+
+      signal.sendGroupMessage("Diese ID wurde nicht gefunden!", [], group_id)
+    elsif like_response.status.client_error? && validation_error_codes&.include?("taken")
+      logger.info "item##{item_id} already liked"
+
+      signal.sendGroupMessage("Diese ID hat dir schon gefallen!", [], group_id)
+    elsif like_response.status.success?
       logger.info "#{sender} liked #{item_id}"
 
       liked_item = get_item(item_id)
@@ -289,6 +287,23 @@ RESPONSE
     nil
   end
 
+  def get_like_results(item_id)
+    json_body = {
+      data: {
+        type: "likes",
+        attributes: {
+          item_id: item_id
+        }
+      }
+    }
+
+    HTTP.headers(
+      default_headers.merge({
+        "X-SIGNAL-ACCOUNT" => sender
+      })
+    ).post(self.class.config.public_api_endpoint + "/api/v2/likes", json: json_body)
+  end
+
   def shorten(string, length)
     return string if string.length <= length
 
@@ -300,6 +315,14 @@ RESPONSE
       "Accept" => "application/vnd.api+json",
       "Content-Type" => "application/vnd.api+json",
     }
+  end
+
+  def parse_json(raw)
+    JSON.parse(raw)
+  rescue JSON::ParserError
+    logger.info "Could not parse json"
+
+    nil
   end
 
   def is_integer?(obj)

@@ -360,7 +360,17 @@ RESPONSE
       signal.verify
     end
 
-    it "responds with liked item if already liked" do
+    it "responds with error if already liked" do
+      error_response = {
+        errors: [
+          {
+            meta: {
+              code: "taken"
+            }
+          }
+        ]
+      }
+
       stub_request(:post, "https://localhost/api/v2/likes").
         with(
           body: "{\"data\":{\"type\":\"likes\",\"attributes\":{\"item_id\":\"1\"}}}",
@@ -369,12 +379,41 @@ RESPONSE
             "Content-Type" => "application/vnd.api+json",
             "X-Signal-Account" => "+31612345678"
           }).
-        to_return(status: 422)
+        to_return(status: 422, body: error_response.to_json)
 
-      stub_request(:get, "https://localhost/api/v2/items/1").
-        to_return(status: 200, body: @liked_item.to_json)
+      response_message = "Diese ID hat dir schon gefallen!"
 
-      response_message = "some item\nlikes: 2, plays: 3\nhttps://localhost/plays/1"
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1")
+      signal_bot.handle_message
+
+      signal.verify
+    end
+
+    it "responds with error if item does not exist" do
+      error_response = {
+        errors: [
+          {
+            meta: {
+              code: "blank"
+            }
+          }
+        ]
+      }
+
+      stub_request(:post, "https://localhost/api/v2/likes").
+        with(
+          body: "{\"data\":{\"type\":\"likes\",\"attributes\":{\"item_id\":\"1\"}}}",
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+            "X-Signal-Account" => "+31612345678"
+          }).
+        to_return(status: 422, body: error_response.to_json)
+
+      response_message = "Diese ID wurde nicht gefunden!"
 
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
