@@ -6,6 +6,6 @@ export DBUS_SESSION_BUS_ADDRESS=$dbus_address
 
 signal-cli -u $SIGNAL_USER_ACCOUNT daemon &
 
-echo "Starting signal bot..."
+echo "Starting signal bot with $SIGNAL_USER_ACCOUNT..."
 
 ruby lib/main.rb
