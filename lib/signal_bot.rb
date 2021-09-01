@@ -66,6 +66,7 @@ Verfügbare Befehle:
 
 !goedsetje
 !search [something] [page:n]
+!like [n]
 !stats
 HELP
 
