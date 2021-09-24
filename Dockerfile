@@ -4,11 +4,11 @@ RUN apt-get update \
   && apt-get install -y default-jre dbus \
   && apt-get purge -y --auto-remove
 
-ADD https://github.com/exquo/signal-libs-build/releases/download/v0.8.5/signal-cli-v0.8.5-x86_64-Linux.tar.gz ./
+ADD https://github.com/exquo/signal-libs-build/releases/download/v0.9.0/signal-cli-v0.9.0-x86_64-Linux.tar.gz ./
 
-RUN tar -xzvf signal-cli-v0.8.5-x86_64-Linux.tar.gz -C /opt \
-  && rm signal-cli-v0.8.5-x86_64-Linux.tar.gz \
-  && ln -sf /opt/signal-cli-0.8.5/bin/signal-cli /usr/local/bin/
+RUN tar -xzvf signal-cli-v0.9.0-x86_64-Linux.tar.gz -C /opt \
+  && rm signal-cli-v0.9.0-x86_64-Linux.tar.gz \
+  && ln -sf /opt/signal-cli-0.9.0/bin/signal-cli /usr/local/bin/
 
 VOLUME /root/.local/share/signal-cli/data/
 
