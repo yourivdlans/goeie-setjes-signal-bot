@@ -18,12 +18,12 @@ Link a new device with Signal
 docker-compose run --rm --entrypoint signal-cli bot link -n "Goeie Setjes bot development"
 ```
 
-Open a second terminal window/tab and copy/paste the `tsdevice` string from the link output into qrencode.
+Open a second terminal window/tab and copy/paste the `sgnl` string from the link output into qrencode.
 
 Scan the output with Signal to link the device.
 
 ```bash
-qrencode -o qrcode.png 'tsdevice:/?uuid=uuid&pub_key=pub_key' && open qrcode.png
+qrencode -o qrcode.png 'sgnl://linkdevice?uuid=uuid&pub_key=pub_key' && open qrcode.png
 ```
 
 Start signal bot
