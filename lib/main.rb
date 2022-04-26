@@ -50,7 +50,7 @@ class Main
       logger.info "group_id: #{group_id}"
       logger.info "Message: #{message}"
 
-      SignalBot.new(signal, sender, group_id, message).handle_message
+      SignalBot.new(signal, sender, group_id, message, timestamp).handle_message
     end
 
     signal.on_signal("MessageReceived") do |timestamp, sender, group_id, message, _attachments|
@@ -59,7 +59,7 @@ class Main
       logger.info "group_id: #{group_id}"
       logger.info "Message: #{message}"
 
-      SignalBot.new(signal, sender, group_id, message).handle_message
+      SignalBot.new(signal, sender, group_id, message, timestamp).handle_message
     end
   end
 

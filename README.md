@@ -20,7 +20,7 @@ docker-compose run --rm --entrypoint signal-cli bot link -n "Goeie Setjes bot de
 
 Open a second terminal window/tab and copy/paste the `sgnl` string from the link output into qrencode.
 
-Scan the output with Signal to link the device.
+Scan the qrcode with Signal using your phone to link the device.
 
 ```bash
 qrencode -o qrcode.png 'sgnl://linkdevice?uuid=uuid&pub_key=pub_key' && open qrcode.png
@@ -30,6 +30,12 @@ Start signal bot
 
 ```bash
 docker-compose up
+```
+
+Load new code
+
+```bash
+docker-compose down && docker-compose up --build
 ```
 
 ## Running tests

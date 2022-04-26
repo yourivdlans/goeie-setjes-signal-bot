@@ -10,7 +10,7 @@ describe SignalBot do
 
   describe "when group_id does not correspond with config" do
     it "returns nil" do
-      signal_bot = SignalBot.new(nil, "+31612345678", [1, 2, 3], "!help")
+      signal_bot = SignalBot.new(nil, "+31612345678", [1, 2, 3], "!help", 123456789)
       _(signal_bot.handle_message).must_be_nil
     end
   end
@@ -26,7 +26,7 @@ describe SignalBot do
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [@help_response, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!help")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!help", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -36,7 +36,7 @@ describe SignalBot do
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [@help_response, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!hilfe")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!hilfe", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -74,7 +74,7 @@ describe SignalBot do
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!goedsetje")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!goedsetje", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -92,7 +92,7 @@ describe SignalBot do
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!goedsetje")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!goedsetje", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -149,7 +149,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!stats")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!stats", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -167,7 +167,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!stats")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!stats", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -185,7 +185,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!stats")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!stats", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -238,7 +238,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something ")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something ", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -275,7 +275,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something page:2")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something page:2", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -293,7 +293,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Wir konnten nichts finden", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something ")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something ", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -311,7 +311,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something ")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!search something ", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -354,7 +354,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -386,7 +386,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -418,7 +418,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -428,7 +428,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["NEIN!", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like n")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like n", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -441,7 +441,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten!", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -457,7 +457,7 @@ RESPONSE
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["Du bist ein unlike", [], [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!unlike 1")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!unlike 1", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -485,8 +485,15 @@ RESPONSE
 
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["Was für eine Scheiße ist das?", [], [1, 2 ,3]])
+      signal.expect(:sendGroupMessageReaction, nil) do |emoji, remove_reaction, target_author, target_sent_timestamp, group_id|
+        SignalBot::NEW_ITEM_REACTIONS.include?(emoji) &&
+          remove_reaction == false &&
+          target_author == "+31612345678" &&
+          target_sent_timestamp == 123456789 &&
+          group_id == [1, 2, 3]
+      end
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "string with url https://example.com and content")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "string with url https://example.com and content", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -505,15 +512,16 @@ RESPONSE
 
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten!", [], [1, 2 ,3]])
+      signal.expect(:sendGroupMessageReaction, nil, ["\u{26A0}", false, "+31612345678", 123456789, [1, 2 ,3]])
 
-      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "string with url https://example.com and content")
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "string with url https://example.com and content", 123456789)
       signal_bot.handle_message
 
       signal.verify
     end
 
     it "does not post if item contains public api endpoint" do
-      signal_bot = SignalBot.new(nil, "+31612345678", [1, 2, 3], "string with url https://public-api/some-path and content")
+      signal_bot = SignalBot.new(nil, "+31612345678", [1, 2, 3], "string with url https://public-api/some-path and content", 123456789)
       signal_bot.handle_message
     end
   end

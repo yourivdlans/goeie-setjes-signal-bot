@@ -10,15 +10,18 @@ class SignalBot
   setting :private_api_token
   setting :signal_group_id
 
+  NEW_ITEM_REACTIONS = ["\u{1F3B5}", "\u{1F3B6}", "\u{1F3A7}", "\u{1F4FB}", "\u{1F3B9}", "\u{1F941}", "\u{1F483}", "\u{1F57A}", "\u{}"]
+
   def self.logger
     @logger ||= Logger.new(STDOUT)
   end
 
-  def initialize(signal, sender, group_id, message)
+  def initialize(signal, sender, group_id, message, timestamp)
     @signal = signal
     @sender = sender
     @group_id = group_id
     @message = message
+    @timestamp = timestamp
   end
 
   def handle_message
@@ -46,7 +49,7 @@ class SignalBot
 
   private
 
-  attr_reader :signal, :sender, :group_id, :message
+  attr_reader :signal, :sender, :group_id, :message, :timestamp
 
   def logger
     self.class.logger
@@ -236,10 +239,12 @@ RESPONSE
       logger.info "New item created"
 
       signal.sendGroupMessage("Was für eine Scheiße ist das?", [], group_id)
+      signal.sendGroupMessageReaction(NEW_ITEM_REACTIONS.sample, false, sender, timestamp, group_id)
     else
       logger.info "New item could not be created"
 
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
+      signal.sendGroupMessageReaction("\u{26A0}", false, sender, timestamp, group_id)
     end
   end
 
