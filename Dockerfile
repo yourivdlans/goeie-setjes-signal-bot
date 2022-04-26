@@ -1,14 +1,16 @@
 FROM ruby:3.0.3
 
+ARG SIGNAL_CLI_VERSION=0.10.5
+
 RUN apt-get update \
   && apt-get install -y openjdk-17-jre dbus zip \
   && apt-get purge -y --auto-remove
 
-ADD https://github.com/AsamK/signal-cli/releases/download/v0.10.5/signal-cli-0.10.5-Linux.tar.gz ./
+ADD https://github.com/AsamK/signal-cli/releases/download/v$SIGNAL_CLI_VERSION/signal-cli-$SIGNAL_CLI_VERSION-Linux.tar.gz ./
 
-RUN tar -xzvf signal-cli-0.10.5-Linux.tar.gz -C /opt \
-  && rm signal-cli-0.10.5-Linux.tar.gz \
-  && ln -sf /opt/signal-cli-0.10.5/bin/signal-cli /usr/local/bin/
+RUN tar -xzvf signal-cli-$SIGNAL_CLI_VERSION-Linux.tar.gz -C /opt \
+  && rm signal-cli-$SIGNAL_CLI_VERSION-Linux.tar.gz \
+  && ln -sf /opt/signal-cli-$SIGNAL_CLI_VERSION/bin/signal-cli /usr/local/bin/
 
 # When building on M1
 # ADD https://github.com/exquo/signal-libs-build/releases/download/libsignal-client_v0.15.0/libsignal_jni.so-v0.15.0-aarch64-unknown-linux-gnu.tar.gz ./
