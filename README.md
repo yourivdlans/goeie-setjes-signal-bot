@@ -80,6 +80,10 @@ dbus-send --session --type=method_call --print-reply --dest='org.asamk.Signal' /
 dbus-send --session --type=method_call  --print-reply --dest=org.asamk.Signal /org/asamk/Signal org.asamk.Signal.sendGroupMessage  string:'Hallo?'  string:array:''  array:byte:some,byte,array
 ```
 
+#### Dbus documentation
+
+See: https://github.com/AsamK/signal-cli/blob/master/man/signal-cli-dbus.5.adoc
+
 ## How to deploy to dokku for the first time
 
 ```bash
