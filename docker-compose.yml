@@ -15,3 +15,4 @@ services:
       GOEIE_SETJES_PUBLIC_API: ${GOEIE_SETJES_PUBLIC_API}
     volumes:
       - data:/root/.local/share/signal-cli/data/
+    init: true
