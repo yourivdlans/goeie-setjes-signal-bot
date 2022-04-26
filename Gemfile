@@ -5,9 +5,9 @@ git_source(:github) do |repo_name|
   "https://github.com/#{repo_name}.git"
 end
 
-ruby '~> 2.6.5'
+ruby '~> 3.0.3'
 
-gem "ruby-dbus", "~> 0.16.0"
+gem "ruby-dbus", "~> 0.17"
 
 gem "http", "~> 4.4"
 
