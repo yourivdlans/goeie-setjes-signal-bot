@@ -1,6 +1,8 @@
 require "http"
 require "logger"
 require "dry-configurable"
+require "./lib/api/base"
+require "./lib/api/goeie_setjes"
 
 class SignalBot
   extend Dry::Configurable
@@ -79,10 +81,10 @@ HELP
   end
 
   def random_item
-    item = get_random_item
+    random_item = api.get_random_item
 
-    if item
-      attributes = item.dig("data", "attributes")
+    if random_item.success?
+      attributes = random_item.parsed_response.dig("data", "attributes")
       response = [attributes["fb-name"], "likes: #{attributes["likes-count"]}, plays: #{attributes["plays-count"]}", attributes["url"]].join("\n")
 
       logger.info "Send random item"
@@ -96,9 +98,10 @@ HELP
   end
 
   def stats
-    results = get_stats_results
+    request = api.get_stats_results
+    results = request.parsed_response
 
-    if results.nil? || results["data"].empty?
+    if !request.success? || results["data"].empty?
       logger.info "Stats returned an error"
 
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten", [], group_id)
@@ -133,9 +136,10 @@ TOPITEM
       page_number = 1
     end
 
-    results = get_search_results(query.strip, page: page_number)
+    request = api.get_search_results(query.strip, page: page_number)
+    results = request.parsed_response
 
-    if results.nil?
+    unless request.success?
       logger.info "Search returned an error"
 
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten", [], group_id)
@@ -179,8 +183,9 @@ RESPONSE
       return
     end
 
-    like_response = get_like_results(item_id)
-    json_like_response = parse_json(like_response.body.to_s)
+    like_request = api.like_item(item_id, signal_account: sender)
+    like_response = like_request.response
+    json_like_response = like_request.parsed_response
 
     validation_error_codes = json_like_response&.dig("errors")&.map { |error| error.dig("meta", "code") }&.compact
 
@@ -195,11 +200,11 @@ RESPONSE
     elsif like_response.status.success?
       logger.info "#{sender} liked #{item_id}"
 
-      liked_item = get_item(item_id)
+      liked_item = api.get_item(item_id)
 
-      return if liked_item.nil?
+      return unless liked_item.success?
 
-      attributes = liked_item.dig("data", "attributes")
+      attributes = liked_item.parsed_response.dig("data", "attributes")
       response = [attributes["name"], "likes: #{attributes["likes_count"]}, plays: #{attributes["plays_count"]}", attributes["url"]].join("\n")
 
       logger.info "Send liked item"
@@ -218,10 +223,10 @@ RESPONSE
       return
     end
 
-    report_response = get_report_results(item_id)
-    json_report_response = parse_json(report_response.body.to_s)
+    report_request = api.report_item(item_id, signal_account: sender)
+    json_report_response = report_request.parsed_response
 
-    if report_response.status.success?
+    if report_request.success?
       signal.sendGroupMessage("Raus mit dieser verdammten Scheiße!", [], group_id)
     else
       logger.info "error when updating item##{item_id}"
@@ -236,6 +241,10 @@ RESPONSE
     return if words.length.zero?
 
     signal.sendGroupMessage("Du bist ein #{words[0].delete_prefix("!")}", [], group_id)
+  end
+
+  def api
+    Api::GoeieSetjes.new(self.class.config.public_api_endpoint, self.class.logger)
   end
 
   def add_item
@@ -266,92 +275,6 @@ RESPONSE
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
       signal.sendGroupMessageReaction("\u{26A0}", false, sender, timestamp, group_id)
     end
-  end
-
-  def get_item(item_id)
-    response = HTTP.get(self.class.config.public_api_endpoint + "/api/v2/items/#{item_id}")
-
-    JSON.parse(response.body.to_s) if response.status.success?
-  rescue JSON::ParserError
-    nil
-  end
-
-  def get_random_item
-    response = HTTP.headers(default_headers)
-                   .get(self.class.config.public_api_endpoint + "/api/random-item")
-
-    JSON.parse(response.body.to_s) if response.status.success?
-  rescue JSON::ParserError
-    nil
-  end
-
-  def get_stats_results
-    response = HTTP.headers(default_headers)
-                   .get(self.class.config.public_api_endpoint + "/api/v2/stats.json?include=most_liked_item,most_played_item,top_items")
-
-    JSON.parse(response.body.to_s) if response.status.success?
-  rescue JSON::ParserError
-    nil
-  end
-
-  def get_search_results(query, page: 1)
-    response = HTTP.headers(default_headers)
-                   .get(
-                     self.class.config.public_api_endpoint + "/api/v2/items",
-                     params: {
-                       sort: "-likes_count,-plays_count",
-                       "page[number]": page,
-                       "page[size]": 5,
-                       "filter[broken_link]": "false",
-                       "filter[name][search]": query,
-                       "stats[total]": "count"
-                     }
-                   )
-
-    JSON.parse(response.body.to_s) if response.status.success?
-  rescue JSON::ParserError
-    nil
-  end
-
-  def get_like_results(item_id)
-    json_body = {
-      data: {
-        type: "likes",
-        attributes: {
-          item_id: item_id
-        }
-      }
-    }
-
-    HTTP.headers(
-      default_headers.merge({
-        "X-SIGNAL-ACCOUNT" => sender
-      })
-    ).post(self.class.config.public_api_endpoint + "/api/v2/likes", json: json_body)
-  end
-
-  def get_report_results(item_id)
-    json_body = {
-      data: {
-        id: item_id,
-        type: "items",
-        attributes: {
-          broken_link: true
-        }
-      }
-    }
-
-    response = HTTP.headers(
-      default_headers.merge({
-        "X-SIGNAL-ACCOUNT" => sender
-      })
-    ).patch(self.class.config.public_api_endpoint + "/api/v2/items/#{item_id}.json", json: json_body)
-
-    if response.status.client_error?
-      logger.info response.body.to_s
-    end
-
-    response
   end
 
   def shorten(string, length)

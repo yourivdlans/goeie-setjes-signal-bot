@@ -448,6 +448,66 @@ RESPONSE
     end
   end
 
+  describe "when !report is received" do
+    before do
+      SignalBot.config.signal_group_id = "1 2 3"
+      SignalBot.config.public_api_endpoint = "https://localhost"
+
+      @reported_item = {
+        data: {
+          attributes: {
+            name: "some item",
+            broken_link: true
+          }
+        }
+      }
+    end
+
+    it "reports an item" do
+      stub_request(:patch, "https://localhost/api/v2/items/1.json").
+        with(
+          body: "{\"data\":{\"id\":\"1\",\"type\":\"items\",\"attributes\":{\"broken_link\":true}}}",
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+            "X-Signal-Account" => "+31612345678"
+          }).
+        to_return(status: 200)
+
+      response_message = "Raus mit dieser verdammten Scheiße!"
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!report 1", 123456789)
+      signal_bot.handle_message
+
+      signal.verify
+    end
+
+    it "responds with error if item does not exist" do
+      stub_request(:patch, "https://localhost/api/v2/items/1.json").
+        with(
+          body: "{\"data\":{\"id\":\"1\",\"type\":\"items\",\"attributes\":{\"broken_link\":true}}}",
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+            "X-Signal-Account" => "+31612345678"
+          }).
+        to_return(status: 404)
+
+      response_message = "ACHTUNG! Ein großes Problem ist aufgetreten!"
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!report 1", 123456789)
+      signal_bot.handle_message
+
+      signal.verify
+    end
+  end
+
   describe "when an unknown command is received" do
     before do
       SignalBot.config.signal_group_id = "1 2 3"
