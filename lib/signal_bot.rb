@@ -40,6 +40,8 @@ class SignalBot
       search_items(message.delete_prefix("!search").strip)
     elsif /^!like\s.*?/.match?(message)
       like_item(message.delete_prefix("!like").strip)
+    elsif /^!report\s.*?/.match?(message)
+      report_item(message.delete_prefix("!report").strip)
     elsif message.start_with?("!")
       unknown_command(message)
     elsif /https?:\/\/|wwww\./.match?(message) && !message.include?(self.class.config.public_api_endpoint)
@@ -210,6 +212,24 @@ RESPONSE
     end
   end
 
+  def report_item(item_id)
+    unless is_integer?(item_id)
+      signal.sendGroupMessage("NEIN!", [], group_id)
+      return
+    end
+
+    report_response = get_report_results(item_id)
+    json_report_response = parse_json(report_response.body.to_s)
+
+    if report_response.status.success?
+      signal.sendGroupMessage("Raus mit dieser verdammten Scheiße!", [], group_id)
+    else
+      logger.info "error when updating item##{item_id}"
+
+      signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
+    end
+  end
+
   def unknown_command(message)
     words = message.split(" ")
 
@@ -308,6 +328,30 @@ RESPONSE
         "X-SIGNAL-ACCOUNT" => sender
       })
     ).post(self.class.config.public_api_endpoint + "/api/v2/likes", json: json_body)
+  end
+
+  def get_report_results(item_id)
+    json_body = {
+      data: {
+        id: item_id,
+        type: "items",
+        attributes: {
+          broken_link: true
+        }
+      }
+    }
+
+    response = HTTP.headers(
+      default_headers.merge({
+        "X-SIGNAL-ACCOUNT" => sender
+      })
+    ).patch(self.class.config.public_api_endpoint + "/api/v2/items/#{item_id}.json", json: json_body)
+
+    if response.status.client_error?
+      logger.info response.body.to_s
+    end
+
+    response
   end
 
   def shorten(string, length)
