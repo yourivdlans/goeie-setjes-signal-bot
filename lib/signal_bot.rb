@@ -291,14 +291,6 @@ RESPONSE
     }
   end
 
-  def parse_json(raw)
-    JSON.parse(raw)
-  rescue JSON::ParserError
-    logger.info "Could not parse json"
-
-    nil
-  end
-
   def is_integer?(obj)
     Integer(obj)
 
