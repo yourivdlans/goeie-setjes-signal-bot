@@ -19,7 +19,7 @@ describe SignalBot do
     before do
       SignalBot.config.signal_group_id = "1 2 3"
 
-      @help_response = "Verfügbare Befehle:\n\n!goedsetje\n!search [something] [page:n]\n!like [n]\n!stats"
+      @help_response = "Verfügbare Befehle:\n\n!goedsetje\n!search [something] [page:n]\n!like [n]\n!report [n]\n!stats"
     end
 
     it "responds with the help text for !help" do

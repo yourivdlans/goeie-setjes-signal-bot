@@ -74,6 +74,7 @@ Verfügbare Befehle:
 !goedsetje
 !search [something] [page:n]
 !like [n]
+!report [n]
 !stats
 HELP
 
