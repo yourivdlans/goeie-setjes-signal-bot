@@ -8,8 +8,7 @@ class SignalBot
   extend Dry::Configurable
 
   setting :public_api_endpoint
-  setting :private_api_endpoint
-  setting :private_api_token
+  setting :signal_bot_api_token
   setting :signal_group_id
 
   NEW_ITEM_REACTIONS = ["\u{1F3B5}", "\u{1F3B6}", "\u{1F3A7}", "\u{1F4FB}", "\u{1F3B9}", "\u{1F941}", "\u{1F483}", "\u{1F57A}", "\u{}"]
@@ -225,7 +224,6 @@ RESPONSE
     end
 
     report_request = api.report_item(item_id, signal_account: sender)
-    json_report_response = report_request.parsed_response
 
     if report_request.success?
       signal.sendGroupMessage("Raus mit dieser verdammten Scheiße!", [], group_id)
@@ -245,27 +243,13 @@ RESPONSE
   end
 
   def api
-    Api::GoeieSetjes.new(self.class.config.public_api_endpoint, self.class.logger)
+    Api::GoeieSetjes.new(self.class.config.public_api_endpoint, self.class.logger, self.class.config.signal_bot_api_token)
   end
 
   def add_item
-    json_body = {
-      data: {
-        type: "signal_messages",
-        attributes: {
-          sender: sender,
-          message: message
-        }
-      }
-    }
+    request = api.create_signal_message(sender, message)
 
-    response = HTTP.headers(
-      default_headers.merge({
-        "X-SIGNAL-BOT-API-TOKEN" => self.class.config.private_api_token
-      })
-    ).post(self.class.config.private_api_endpoint, json: json_body)
-
-    if response.status.success?
+    if request.success?
       logger.info "New item created"
 
       signal.sendGroupMessage("Was für eine Scheiße ist das?", [], group_id)

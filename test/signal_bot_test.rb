@@ -528,12 +528,11 @@ RESPONSE
     before do
       SignalBot.config.signal_group_id = "1 2 3"
       SignalBot.config.public_api_endpoint = "https://public-api"
-      SignalBot.config.private_api_endpoint = "https://localhost"
-      SignalBot.config.private_api_token = "some-token"
+      SignalBot.config.signal_bot_api_token = "some-token"
     end
 
     it "posts item to api and responds with message" do
-      stub_request(:post, "https://localhost/").
+      stub_request(:post, "https://public-api/api/v2/signal_messages").
         with(
           body: "{\"data\":{\"type\":\"signal_messages\",\"attributes\":{\"sender\":\"+31612345678\",\"message\":\"string with url https://example.com and content\"}}}",
           headers: {
@@ -560,7 +559,7 @@ RESPONSE
     end
 
     it "responds with an error message" do
-      stub_request(:post, "https://localhost/").
+      stub_request(:post, "https://public-api/api/v2/signal_messages").
         with(
           body: "{\"data\":{\"type\":\"signal_messages\",\"attributes\":{\"sender\":\"+31612345678\",\"message\":\"string with url https://example.com and content\"}}}",
           headers: {

@@ -2,8 +2,7 @@ require "dbus"
 require "./lib/signal_bot"
 
 SignalBot.config.public_api_endpoint = ENV.fetch("GOEIE_SETJES_PUBLIC_API")
-SignalBot.config.private_api_endpoint = ENV.fetch("GOEIE_SETJES_API")
-SignalBot.config.private_api_token = ENV.fetch("GOEIE_SETJES_API_TOKEN")
+SignalBot.config.signal_bot_api_token = ENV.fetch("GOEIE_SETJES_SIGNAL_BOT_API_TOKEN")
 SignalBot.config.signal_group_id = ENV.fetch("SIGNAL_GROUP_ID")
 
 $stdout.sync = true
