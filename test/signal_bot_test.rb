@@ -528,7 +528,6 @@ RESPONSE
     before do
       SignalBot.config.signal_group_id = "1 2 3"
       SignalBot.config.public_api_endpoint = "https://public-api"
-      SignalBot.config.private_api_endpoint = "https://localhost"
       SignalBot.config.signal_bot_api_token = "some-token"
     end
 

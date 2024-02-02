@@ -8,7 +8,6 @@ class SignalBot
   extend Dry::Configurable
 
   setting :public_api_endpoint
-  setting :private_api_endpoint
   setting :signal_bot_api_token
   setting :signal_group_id
 
