@@ -244,27 +244,14 @@ RESPONSE
   end
 
   def api
-    Api::GoeieSetjes.new(self.class.config.public_api_endpoint, self.class.logger)
+    Api::GoeieSetjes.new(self.class.config.public_api_endpoint, self.class.logger, self.class.config.signal_bot_api_token)
   end
 
   def add_item
-    json_body = {
-      data: {
-        type: "signal_messages",
-        attributes: {
-          sender: sender,
-          message: message
-        }
-      }
-    }
+    request = api.create_signal_message(sender, message)
+    results = request.parsed_response
 
-    response = HTTP.headers(
-      default_headers.merge({
-        "X-SIGNAL-BOT-API-TOKEN" => self.class.config.private_api_token
-      })
-    ).post(self.class.config.private_api_endpoint, json: json_body)
-
-    if response.status.success?
+    if request.success?
       logger.info "New item created"
 
       signal.sendGroupMessage("Was für eine Scheiße ist das?", [], group_id)

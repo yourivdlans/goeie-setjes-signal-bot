@@ -1,9 +1,28 @@
 class Api::GoeieSetjes
-  attr_reader :response, :parsed_response
+  attr_reader :response, :parsed_response, :signal_bot_api_token
 
-  def initialize(base_path, logger)
+  def initialize(base_path, logger, signal_bot_api_token)
     @base_path = base_path
     @logger = logger
+    @signal_bot_api_token = signal_bot_api_token
+  end
+
+  def create_signal_message(sender, message)
+    json_body = {
+      data: {
+        type: "signal_messages",
+        attributes: {
+          sender: sender,
+          message: message
+        }
+      }
+    }
+
+    post(
+      "/api/v2/signal_messages",
+      headers: { "X-SIGNAL-BOT-API-TOKEN": signal_bot_api_token },
+      json: json_body
+    )
   end
 
   def get_item(item_id)

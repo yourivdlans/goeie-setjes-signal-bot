@@ -532,7 +532,7 @@ RESPONSE
     end
 
     it "posts item to api and responds with message" do
-      stub_request(:post, "https://localhost/").
+      stub_request(:post, "https://public-api/api/v2/signal_messages").
         with(
           body: "{\"data\":{\"type\":\"signal_messages\",\"attributes\":{\"sender\":\"+31612345678\",\"message\":\"string with url https://example.com and content\"}}}",
           headers: {
@@ -559,7 +559,7 @@ RESPONSE
     end
 
     it "responds with an error message" do
-      stub_request(:post, "https://localhost/").
+      stub_request(:post, "https://public-api/api/v2/signal_messages").
         with(
           body: "{\"data\":{\"type\":\"signal_messages\",\"attributes\":{\"sender\":\"+31612345678\",\"message\":\"string with url https://example.com and content\"}}}",
           headers: {
