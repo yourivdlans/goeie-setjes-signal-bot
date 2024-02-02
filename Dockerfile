@@ -1,17 +1,17 @@
 FROM ruby:3.1.4
 
 ARG TARGETPLATFORM
-ARG SIGNAL_CLI_VERSION=0.11.11
-ARG LIBSIGNAL_CLIENT_VERSION=0.25.0
+ARG SIGNAL_CLI_VERSION=0.12.7
+ARG LIBSIGNAL_CLIENT_VERSION=0.36.1
 
 RUN apt-get update \
   && apt-get install -y openjdk-17-jre dbus zip \
   && apt-get purge -y --auto-remove
 
-ADD https://github.com/AsamK/signal-cli/releases/download/v$SIGNAL_CLI_VERSION/signal-cli-$SIGNAL_CLI_VERSION-Linux.tar.gz ./
+ADD https://github.com/AsamK/signal-cli/releases/download/v$SIGNAL_CLI_VERSION/signal-cli-$SIGNAL_CLI_VERSION.tar.gz ./
 
-RUN tar -xzvf signal-cli-$SIGNAL_CLI_VERSION-Linux.tar.gz -C /opt \
-  && rm signal-cli-$SIGNAL_CLI_VERSION-Linux.tar.gz \
+RUN tar -xzvf signal-cli-$SIGNAL_CLI_VERSION.tar.gz -C /opt \
+  && rm signal-cli-$SIGNAL_CLI_VERSION.tar.gz \
   && ln -sf /opt/signal-cli-$SIGNAL_CLI_VERSION/bin/signal-cli /usr/local/bin/
 
 # When building on M1
