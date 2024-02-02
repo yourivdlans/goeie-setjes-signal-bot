@@ -9,7 +9,7 @@ class SignalBot
 
   setting :public_api_endpoint
   setting :private_api_endpoint
-  setting :private_api_token
+  setting :signal_bot_api_token
   setting :signal_group_id
 
   NEW_ITEM_REACTIONS = ["\u{1F3B5}", "\u{1F3B6}", "\u{1F3A7}", "\u{1F4FB}", "\u{1F3B9}", "\u{1F941}", "\u{1F483}", "\u{1F57A}", "\u{}"]

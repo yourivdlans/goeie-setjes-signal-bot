@@ -90,7 +90,7 @@ See: https://github.com/AsamK/signal-cli/blob/master/man/signal-cli-dbus.5.adoc
 ssh dokku@server apps:create goeie-setjes-signal-bot
 ssh dokku@server proxy:disable goeie-setjes-signal-bot
 ssh dokku@server storage:mount goeie-setjes-signal-bot /var/lib/dokku/data/storage/goeie-setjes-signal-bot:/root/.local/share/signal-cli/data/
-ssh dokku@server config:set goeie-setjes-signal-bot SIGNAL_USER_ACCOUNT=... SIGNAL_GROUP_ID=... GOEIE_SETJES_API=... GOEIE_SETJES_API_TOKEN=...
+ssh dokku@server config:set goeie-setjes-signal-bot SIGNAL_USER_ACCOUNT=... SIGNAL_GROUP_ID=... GOEIE_SETJES_SIGNAL_BOT_API_TOKEN=...
 git remote add dokku dokku@server:goeie-setjes-signal-bot
 git push dokku master
 ```

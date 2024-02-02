@@ -2,7 +2,7 @@ require "test_helper"
 
 ENV["GOEIE_SETJES_PUBLIC_API"] ||= ""
 ENV["GOEIE_SETJES_API"] ||= ""
-ENV["GOEIE_SETJES_API_TOKEN"] ||= ""
+ENV["GOEIE_SETJES_SIGNAL_BOT_API_TOKEN"] ||= ""
 ENV["SIGNAL_GROUP_ID"] ||= ""
 
 require "main"
