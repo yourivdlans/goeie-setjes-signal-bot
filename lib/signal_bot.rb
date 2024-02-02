@@ -224,7 +224,6 @@ RESPONSE
     end
 
     report_request = api.report_item(item_id, signal_account: sender)
-    json_report_response = report_request.parsed_response
 
     if report_request.success?
       signal.sendGroupMessage("Raus mit dieser verdammten Scheiße!", [], group_id)
@@ -249,7 +248,6 @@ RESPONSE
 
   def add_item
     request = api.create_signal_message(sender, message)
-    results = request.parsed_response
 
     if request.success?
       logger.info "New item created"
