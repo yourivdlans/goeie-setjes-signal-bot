@@ -286,6 +286,9 @@ SUCCESS
 
       signal.sendGroupMessage(success_response.strip, [], group_id)
       signal.sendGroupMessageReaction(NEW_ITEM_REACTIONS.sample, false, sender, timestamp, group_id)
+
+      # Automatically like added item
+      api.like_item(response.dig("data", "id"))
     else
       logger.info "New item could not be created"
 
