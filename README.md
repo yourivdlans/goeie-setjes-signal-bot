@@ -109,3 +109,11 @@ See: "Link a new device with Signal"
 ```bash
 git push dokku master
 ```
+
+## How to test out features on test chat
+
+When setting a different SIGNAL_GROUP_ID spaces need to be escaped.
+
+```bash
+ssh dokku@projects.itflows.nl config:set goeie-setjes-signal-bot SIGNAL_GROUP_ID="1\ 2\ 3\ 4\"
+```
