@@ -183,7 +183,7 @@ RESPONSE
       return
     end
 
-    like_request = api.like_item(item_id, signal_account: sender)
+    like_request = api.like_item(item_id)
     like_response = like_request.response
     json_like_response = like_request.parsed_response
 
@@ -223,7 +223,7 @@ RESPONSE
       return
     end
 
-    report_request = api.report_item(item_id, signal_account: sender)
+    report_request = api.report_item(item_id)
 
     if report_request.success?
       signal.sendGroupMessage("Raus mit dieser verdammten Scheiße!", [], group_id)
@@ -243,7 +243,12 @@ RESPONSE
   end
 
   def api
-    Api::GoeieSetjes.new(self.class.config.public_api_endpoint, self.class.logger, self.class.config.signal_bot_api_token)
+    Api::GoeieSetjes.new(
+      signal_account: sender,
+      api_endpoint: self.class.config.public_api_endpoint,
+      signal_bot_api_token: self.class.config.signal_bot_api_token,
+      logger: self.class.logger
+    )
   end
 
   def add_item
