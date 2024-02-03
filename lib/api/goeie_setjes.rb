@@ -1,28 +1,24 @@
 class Api::GoeieSetjes
-  attr_reader :response, :parsed_response, :signal_bot_api_token
+  attr_reader :response, :parsed_response
 
-  def initialize(base_path, logger, signal_bot_api_token)
-    @base_path = base_path
-    @logger = logger
+  def initialize(signal_account:, api_endpoint:, signal_bot_api_token:, logger:)
+    @signal_account = signal_account
+    @api_endpoint = api_endpoint
     @signal_bot_api_token = signal_bot_api_token
+    @logger = logger
   end
 
-  def create_signal_message(sender, message)
+  def create_item(url)
     json_body = {
       data: {
-        type: "signal_messages",
+        type: "items",
         attributes: {
-          sender: sender,
-          message: message
+          url: url
         }
       }
     }
 
-    post(
-      "/api/v2/signal_messages",
-      headers: { "X-SIGNAL-BOT-API-TOKEN": signal_bot_api_token },
-      json: json_body
-    )
+    post("/api/v2/items", json: json_body)
   end
 
   def get_item(item_id)
@@ -48,7 +44,7 @@ class Api::GoeieSetjes
     })
   end
 
-  def like_item(item_id, signal_account:)
+  def like_item(item_id)
     json_body = {
       data: {
         type: "likes",
@@ -56,10 +52,10 @@ class Api::GoeieSetjes
       }
     }
 
-    post("/api/v2/likes", headers: { "X-SIGNAL-ACCOUNT": signal_account }, json: json_body)
+    post("/api/v2/likes", json: json_body)
   end
 
-  def report_item(item_id, signal_account:)
+  def report_item(item_id)
     json_body = {
       data: {
         id: item_id,
@@ -70,7 +66,7 @@ class Api::GoeieSetjes
       }
     }
 
-    patch("/api/v2/items/#{item_id}.json", headers: { "X-SIGNAL-ACCOUNT": signal_account }, json: json_body)
+    patch("/api/v2/items/#{item_id}.json", json: json_body)
   end
 
   def success?
@@ -79,11 +75,11 @@ class Api::GoeieSetjes
 
   private
 
-  attr_reader :base_path, :logger
+  attr_reader :signal_bot_api_token, :signal_account, :api_endpoint, :logger
 
   def get(path, headers: {}, params: {})
     @response = HTTP.headers(default_headers.merge(headers))
-                    .get(base_path + path, params: params)
+                    .get(api_endpoint + path, params: params)
 
     @parsed_response = parse_response(@response)
 
@@ -92,7 +88,7 @@ class Api::GoeieSetjes
 
   def post(path, headers: {}, json: {})
     @response = HTTP.headers(default_headers.merge(headers))
-                    .post(base_path + path, json: json)
+                    .post(api_endpoint + path, json: json)
 
     @parsed_response = parse_response(@response)
 
@@ -101,7 +97,7 @@ class Api::GoeieSetjes
 
   def patch(path, headers: {}, json: {})
     @response = HTTP.headers(default_headers.merge(headers))
-                    .patch(base_path + path, json: json)
+                    .patch(api_endpoint + path, json: json)
 
     @parsed_response = parse_response(@response)
 
@@ -123,6 +119,8 @@ class Api::GoeieSetjes
     {
       "Accept" => "application/vnd.api+json",
       "Content-Type" => "application/vnd.api+json",
+      "X-SIGNAL-ACCOUNT" => signal_account,
+      "X-SIGNAL-BOT-API-TOKEN" => signal_bot_api_token
     }
   end
 end
