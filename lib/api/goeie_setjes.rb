@@ -8,22 +8,17 @@ class Api::GoeieSetjes
     @logger = logger
   end
 
-  def create_signal_message(sender, message)
+  def create_item(url)
     json_body = {
       data: {
-        type: "signal_messages",
+        type: "items",
         attributes: {
-          sender: sender,
-          message: message
+          url: url
         }
       }
     }
 
-    post(
-      "/api/v2/signal_messages",
-      headers: { "X-SIGNAL-BOT-API-TOKEN": signal_bot_api_token },
-      json: json_body
-    )
+    post("/api/v2/items", json: json_body)
   end
 
   def get_item(item_id)

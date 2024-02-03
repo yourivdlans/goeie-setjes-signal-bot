@@ -532,18 +532,35 @@ RESPONSE
     end
 
     it "posts item to api and responds with message" do
-      stub_request(:post, "https://public-api/api/v2/signal_messages").
+      stub_request(:post, "https://public-api/api/v2/items").
         with(
-          body: "{\"data\":{\"type\":\"signal_messages\",\"attributes\":{\"sender\":\"+31612345678\",\"message\":\"string with url https://example.com and content\"}}}",
+          body: "{\"data\":{\"type\":\"items\",\"attributes\":{\"url\":\"https://example.com\"}}}",
           headers: {
             "Accept" => "application/vnd.api+json",
             "Content-Type" => "application/vnd.api+json",
-            "X-SIGNAL-BOT-API-TOKEN" => "some-token"
+            "X-Signal-Account" => "+31612345678"
           }).
-        to_return(status: 200)
+        to_return(
+          status: 200,
+          body: {
+            data: {
+              id: "1",
+              type: "items",
+              attributes: {
+                url: "https://localhost:3000/plays/1",
+                broken_link: false,
+                name: "https://example.com",
+                full_picture: nil,
+                created_at_origin: "2024-01-01T12:00:00+01:00",
+                plays_count: 0,
+                likes_count: 0
+              }
+            }
+          }.to_json
+        )
 
       signal = Minitest::Mock.new
-      signal.expect(:sendGroupMessage, nil, ["Was für eine Scheiße ist das?", [], [1, 2 ,3]])
+      signal.expect(:sendGroupMessage, nil, ["Was für eine Scheiße ist das?\n\nhttps://localhost:3000/plays/1", [], [1, 2 ,3]])
       signal.expect(:sendGroupMessageReaction, nil) do |emoji, remove_reaction, target_author, target_sent_timestamp, group_id|
         SignalBot::NEW_ITEM_REACTIONS.include?(emoji) &&
           remove_reaction == false &&
@@ -559,13 +576,13 @@ RESPONSE
     end
 
     it "responds with an error message" do
-      stub_request(:post, "https://public-api/api/v2/signal_messages").
+      stub_request(:post, "https://public-api/api/v2/items").
         with(
-          body: "{\"data\":{\"type\":\"signal_messages\",\"attributes\":{\"sender\":\"+31612345678\",\"message\":\"string with url https://example.com and content\"}}}",
+          body: "{\"data\":{\"type\":\"items\",\"attributes\":{\"url\":\"https://example.com\"}}}",
           headers: {
             "Accept" => "application/vnd.api+json",
             "Content-Type" => "application/vnd.api+json",
-            "X-SIGNAL-BOT-API-TOKEN" => "some-token"
+            "X-Signal-Account" => "+31612345678"
           }).
         to_return(status: 500)
 

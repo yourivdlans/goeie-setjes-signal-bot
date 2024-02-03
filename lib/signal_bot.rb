@@ -1,6 +1,7 @@
 require "http"
 require "logger"
 require "dry-configurable"
+require "./lib/url_regex"
 require "./lib/api/base"
 require "./lib/api/goeie_setjes"
 
@@ -252,12 +253,20 @@ RESPONSE
   end
 
   def add_item
-    request = api.create_signal_message(sender, message)
+    url_from_message = message.match(UrlRegex.for_finding_urls).to_s
+    request = api.create_item(url_from_message)
+    response = request.parsed_response
 
     if request.success?
       logger.info "New item created"
 
-      signal.sendGroupMessage("Was für eine Scheiße ist das?", [], group_id)
+      success_response = <<-SUCCESS
+Was für eine Scheiße ist das?
+
+#{response.dig("data", "attributes", "url")}
+SUCCESS
+
+      signal.sendGroupMessage(success_response.strip, [], group_id)
       signal.sendGroupMessageReaction(NEW_ITEM_REACTIONS.sample, false, sender, timestamp, group_id)
     else
       logger.info "New item could not be created"
