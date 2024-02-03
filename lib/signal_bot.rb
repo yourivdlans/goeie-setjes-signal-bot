@@ -12,7 +12,20 @@ class SignalBot
   setting :signal_bot_api_token
   setting :signal_group_id
 
-  NEW_ITEM_REACTIONS = ["\u{1F3B5}", "\u{1F3B6}", "\u{1F3A7}", "\u{1F4FB}", "\u{1F3B9}", "\u{1F941}", "\u{1F483}", "\u{1F57A}", "\u{}"]
+  NEW_ITEM_REACTIONS = [
+    "\u{1F3B5}", # music note
+    "\u{1F3B6}", # multiple music notes
+    "\u{1F3A7}", # headphones
+    "\u{1F4FB}", # radio
+    "\u{1F3B9}", # keyboard
+    "\u{1F941}", # drums
+    "\u{1F483}", # female dancer
+    "\u{1F57A}", # male dancer
+    "\u{1F3B8}", # guitar
+    "\u{1F4E3}", # megaphone
+    "\u{1F989}", # owl
+    "\u{1F4BD}", # minidisk
+  ]
 
   def self.logger
     @logger ||= Logger.new(STDOUT)
@@ -48,6 +61,11 @@ class SignalBot
       unknown_command(message)
     elsif /https?:\/\/|wwww\./.match?(message) && !message.include?(self.class.config.public_api_endpoint)
       add_item
+    else
+      code_point = message.to_i(16)
+      emoji = code_point.chr(Encoding::UTF_8)
+
+      signal.sendGroupMessageReaction(emoji, false, sender, timestamp, group_id)
     end
   end
 
