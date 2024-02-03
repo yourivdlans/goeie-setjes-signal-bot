@@ -61,11 +61,11 @@ class SignalBot
       unknown_command(message)
     elsif /https?:\/\/|wwww\./.match?(message) && !message.include?(self.class.config.public_api_endpoint)
       add_item
-    else
-      code_point = message.to_i(16)
-      emoji = code_point.chr(Encoding::UTF_8)
+    # else
+    #   code_point = message.to_i(16)
+    #   emoji = code_point.chr(Encoding::UTF_8)
 
-      signal.sendGroupMessageReaction(emoji, false, sender, timestamp, group_id)
+    #   signal.sendGroupMessageReaction(emoji, false, sender, timestamp, group_id)
     end
   end
 
