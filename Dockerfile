@@ -2,7 +2,7 @@ FROM ruby:3.1.4
 
 ARG TARGETPLATFORM
 ARG SIGNAL_CLI_VERSION=0.12.8
-ARG LIBSIGNAL_CLIENT_VERSION=0.39.2
+ARG LIBSIGNAL_CLIENT_VERSION=0.36.1
 
 RUN apt-get update \
   && apt-get install -y openjdk-17-jre dbus zip \
