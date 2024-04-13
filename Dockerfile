@@ -14,11 +14,9 @@ RUN tar -xzvf signal-cli-$SIGNAL_CLI_VERSION.tar.gz -C /opt \
   && rm signal-cli-$SIGNAL_CLI_VERSION.tar.gz \
   && ln -sf /opt/signal-cli-$SIGNAL_CLI_VERSION/bin/signal-cli /usr/local/bin/
 
-ADD https://github.com/exquo/signal-libs-build/releases/download/libsignal_v$LIBSIGNAL_CLIENT_VERSION/libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz ./
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-      curl -Lo libsignal_jni.so "https://gitlab.com/packaging/libsignal-client/-/jobs/artifacts/v$LIBSIGNAL_CLIENT_VERSION/raw/libsignal-client/amd64/libsignal_jni.so?job=libsignal-client-amd64"; \
-      tar -xzvf libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz -C ./ \
-      && rm libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz \
+      curl -LO "https://github.com/exquo/signal-libs-build/releases/download/libsignal_v$LIBSIGNAL_CLIENT_VERSION/libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz" \
+      && tar -xzvf libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz \
       && zip -uj /opt/signal-cli-$SIGNAL_CLI_VERSION/lib/libsignal-client-$LIBSIGNAL_CLIENT_VERSION.jar libsignal_jni.so; \
     fi
 
