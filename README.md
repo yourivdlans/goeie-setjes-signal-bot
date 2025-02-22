@@ -9,7 +9,7 @@ Install `qrencode` if you haven't got it installed
 Build image
 
 ```bash
-docker-compose build
+docker compose build
 ```
 
 Link a new device with Signal
@@ -29,13 +29,13 @@ qrencode -o qrcode.png 'sgnl://linkdevice?uuid=uuid&pub_key=pub_key' && open qrc
 Start signal bot
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 Load new code
 
 ```bash
-docker-compose down && docker-compose up --build
+docker compose down && docker compose up --build
 ```
 
 ## Running tests
@@ -49,7 +49,7 @@ rake test
 Enter docker container
 
 ```bash
-docker-compose run --rm --entrypoint bash bot
+docker compose run --rm --entrypoint bash bot
 ```
 
 Test private Goeie Setjes API
