@@ -1,12 +1,19 @@
 FROM ruby:3.1.4
 
 ARG TARGETPLATFORM
-ARG SIGNAL_CLI_VERSION=0.12.8
-ARG LIBSIGNAL_CLIENT_VERSION=0.36.1
+ARG SIGNAL_CLI_VERSION=0.13.12
+ARG LIBSIGNAL_CLIENT_VERSION=0.65.2
 
 RUN apt-get update \
-  && apt-get install -y openjdk-17-jre dbus zip \
-  && apt-get purge -y --auto-remove
+  && apt-get install -y dbus zip
+
+RUN apt-get update \
+    && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - \
+    && echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list \
+    && apt-get update \
+    && apt-get install -y temurin-21-jre \
+    && apt-get purge -y --auto-remove \
+    && rm -rf /var/lib/apt/lists/*
 
 ADD https://github.com/AsamK/signal-cli/releases/download/v$SIGNAL_CLI_VERSION/signal-cli-$SIGNAL_CLI_VERSION.tar.gz ./
 
