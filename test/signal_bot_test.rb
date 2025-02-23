@@ -19,7 +19,7 @@ describe SignalBot do
     before do
       SignalBot.config.signal_group_id = "1 2 3"
 
-      @help_response = "Verfügbare Befehle:\n\n!goedsetje\n!search [something] [page:n]\n!like [n]\n!report [n]\n!stats"
+      @help_response = "Verfügbare Befehle:\n\n!goedsetje\n!search [something] [page:n]\n!like [n]\n!scheisse [n]\n!report [n]\n!stats"
     end
 
     it "responds with the help text for !help" do
@@ -55,7 +55,8 @@ describe SignalBot do
           attributes: {
             "fb-name" => "some item",
             "likes-count" => "2",
-            "plays-count" => "3",
+            "dislikes-count" => "0",
+            "plays-count" => "4",
             "url" => "https://localhost/plays/1"
           }
         }
@@ -69,7 +70,7 @@ describe SignalBot do
           }).
         to_return(status: 200, body: random_item.to_json)
 
-      response_message = "some item\nlikes: 2, plays: 3\nhttps://localhost/plays/1"
+      response_message = "some item\n2 ❤️ / 0 💩 / 4 🎵\nhttps://localhost/plays/1"
 
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message, [], [1, 2 ,3]])
@@ -109,18 +110,21 @@ describe SignalBot do
       stats_results = {}
       stats_results[:data] = {
         likes_count: 10,
+        dislikes_count: 5,
         plays_count: 20,
         top_items: [
           {
             url: "https://example.com/some-item",
             name: "Some item",
             likes_count: 5,
+            dislikes_count: 1,
             plays_count: 6
           },
           {
             url: "https://example.com/some-other-item",
             name: "Some other item",
             likes_count: 2,
+            dislikes_count: 2,
             plays_count: 7
           }
         ]
@@ -136,13 +140,14 @@ describe SignalBot do
 
       response_message = <<-RESPONSE
 Total 10 ❤️
+Total 5 💩
 Total 20 🎵
 
 Top 5:
-1. Some item (5 ❤️ / 6 🎵)
+1. Some item (5 ❤️ / 1 💩 / 6 🎵)
 https://example.com/some-item
 
-2. Some other item (2 ❤️ / 7 🎵)
+2. Some other item (2 ❤️ / 2 💩 / 7 🎵)
 https://example.com/some-other-item
 RESPONSE
 
@@ -204,6 +209,7 @@ RESPONSE
             "name" => "an item with more than 40 characters lorum ipsum",
             "url" => "https://localhost/plays/1",
             "likes_count" => 1,
+            "dislikes_count" => 0,
             "plays_count" => 2
           }
         },
@@ -212,7 +218,8 @@ RESPONSE
             "name" => "some item",
             "url" => "https://localhost/plays/2",
             "likes_count" => 3,
-            "plays_count" => 4
+            "dislikes_count" => 4,
+            "plays_count" => 5
           }
         }
       ]
@@ -228,10 +235,10 @@ RESPONSE
         to_return(status: 200, body: @search_result.to_json)
 
       response_message = <<-RESPONSE
-an item with more than 40 characters l... (1 ❤️ / 2 🎵)
+an item with more than 40 characters l... (1 ❤️ / 0 💩 / 2 🎵)
 https://localhost/plays/1
 
-some item (3 ❤️ / 4 🎵)
+some item (3 ❤️ / 4 💩 / 5 🎵)
 https://localhost/plays/2
 RESPONSE
 
@@ -262,10 +269,10 @@ RESPONSE
         to_return(status: 200, body: @search_result.to_json)
 
       response_message = <<-RESPONSE
-an item with more than 40 characters l... (1 ❤️ / 2 🎵)
+an item with more than 40 characters l... (1 ❤️ / 0 💩 / 2 🎵)
 https://localhost/plays/1
 
-some item (3 ❤️ / 4 🎵)
+some item (3 ❤️ / 4 💩 / 5 🎵)
 https://localhost/plays/2
 
 Anzahl der Suchergebnisse: 39
@@ -328,6 +335,7 @@ RESPONSE
           attributes: {
             "name" => "some item",
             "likes_count" => "2",
+            "dislikes_count" => "0",
             "plays_count" => "3",
             "url" => "https://localhost/plays/1"
           }
@@ -349,7 +357,7 @@ RESPONSE
       stub_request(:get, "https://localhost/api/v2/items/1").
         to_return(status: 200, body: @liked_item.to_json)
 
-      response_message = "some item\nlikes: 2, plays: 3\nhttps://localhost/plays/1"
+      response_message = "some item\n2 ❤️ / 0 💩 / 3 🎵\nhttps://localhost/plays/1"
 
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
@@ -442,6 +450,130 @@ RESPONSE
       signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten!", [], [1, 2 ,3]])
 
       signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!like 1", 123456789)
+      signal_bot.handle_message
+
+      signal.verify
+    end
+  end
+
+  describe "when !dislike is received" do
+    before do
+      SignalBot.config.signal_group_id = "1 2 3"
+      SignalBot.config.public_api_endpoint = "https://localhost"
+
+      @disliked_item = {
+        data: {
+          attributes: {
+            "name" => "some item",
+            "likes_count" => "2",
+            "dislikes_count" => "0",
+            "plays_count" => "3",
+            "url" => "https://localhost/plays/1"
+          }
+        }
+      }
+    end
+
+    it "dislikes an item" do
+      stub_request(:post, "https://localhost/api/v2/dislikes").
+        with(
+          body: "{\"data\":{\"type\":\"dislikes\",\"attributes\":{\"item_id\":\"1\"}}}",
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+            "X-Signal-Account" => "+31612345678"
+          }).
+        to_return(status: 200)
+
+      stub_request(:get, "https://localhost/api/v2/items/1").
+        to_return(status: 200, body: @disliked_item.to_json)
+
+      response_message = "some item\n2 ❤️ / 0 💩 / 3 🎵\nhttps://localhost/plays/1"
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!dislike 1", 123456789)
+      signal_bot.handle_message
+
+      signal.verify
+    end
+
+    it "dislikes an item with different message" do
+      stub_request(:post, "https://localhost/api/v2/dislikes").
+        with(
+          body: "{\"data\":{\"type\":\"dislikes\",\"attributes\":{\"item_id\":\"1\"}}}",
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+            "X-Signal-Account" => "+31612345678"
+          }).
+        to_return(status: 200)
+
+      stub_request(:get, "https://localhost/api/v2/items/1").
+        to_return(status: 200, body: @disliked_item.to_json)
+
+      response_message = "some item\n2 ❤️ / 0 💩 / 3 🎵\nhttps://localhost/plays/1"
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!scheisse 1", 123456789)
+      signal_bot.handle_message
+
+      signal.verify
+    end
+
+    it "responds with error if item does not exist" do
+      error_response = {
+        errors: [
+          {
+            meta: {
+              code: "blank"
+            }
+          }
+        ]
+      }
+
+      stub_request(:post, "https://localhost/api/v2/dislikes").
+        with(
+          body: "{\"data\":{\"type\":\"dislikes\",\"attributes\":{\"item_id\":\"1\"}}}",
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+            "X-Signal-Account" => "+31612345678"
+          }).
+        to_return(status: 422, body: error_response.to_json)
+
+      response_message = "Diese ID wurde nicht gefunden!"
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message.strip, [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!dislike 1", 123456789)
+      signal_bot.handle_message
+
+      signal.verify
+    end
+
+    it "responds with error for invalid item id" do
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, ["NEIN!", [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!dislike n", 123456789)
+      signal_bot.handle_message
+
+      signal.verify
+    end
+
+    it "responds with generic error" do
+      stub_request(:post, "https://localhost/api/v2/dislikes").
+        to_return(status: 500)
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, ["ACHTUNG! Ein großes Problem ist aufgetreten!", [], [1, 2 ,3]])
+
+      signal_bot = SignalBot.new(signal, "+31612345678", [1, 2, 3], "!dislike 1", 123456789)
       signal_bot.handle_message
 
       signal.verify
@@ -558,6 +690,16 @@ RESPONSE
             }
           }.to_json
         )
+
+      stub_request(:post, "https://public-api/api/v2/likes").
+        with(
+          body: { data: {type: "likes", attributes: { item_id: "1" }}}.to_json,
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json",
+            "X-Signal-Account" => "+31612345678"
+          }).
+        to_return(status: 200)
 
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, ["Was für eine Scheiße ist das?\n\nhttps://localhost:3000/plays/1", [], [1, 2 ,3]])

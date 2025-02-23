@@ -55,6 +55,17 @@ class Api::GoeieSetjes
     post("/api/v2/likes", json: json_body)
   end
 
+  def dislike_item(item_id)
+    json_body = {
+      data: {
+        type: "dislikes",
+        attributes: { item_id: item_id }
+      }
+    }
+
+    post("/api/v2/dislikes", json: json_body)
+  end
+
   def report_item(item_id)
     json_body = {
       data: {

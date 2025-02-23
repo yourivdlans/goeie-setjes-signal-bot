@@ -55,6 +55,8 @@ class SignalBot
       search_items(message.delete_prefix("!search").strip)
     elsif /^!like\s.*?/.match?(message)
       like_item(message.delete_prefix("!like").strip)
+    elsif matches = /^!(dislike|scheiße|scheisse)\s.*?/.match(message)
+      dislike_item(message.delete_prefix("!#{matches[1]}").strip)
     elsif /^!report\s.*?/.match?(message)
       report_item(message.delete_prefix("!report").strip)
     elsif message.start_with?("!")
@@ -92,6 +94,7 @@ Verfügbare Befehle:
 !goedsetje
 !search [something] [page:n]
 !like [n]
+!scheisse [n]
 !report [n]
 !stats
 HELP
@@ -104,7 +107,7 @@ HELP
 
     if random_item.success?
       attributes = random_item.parsed_response.dig("data", "attributes")
-      response = [attributes["fb-name"], "likes: #{attributes["likes-count"]}, plays: #{attributes["plays-count"]}", attributes["url"]].join("\n")
+      response = [attributes["fb-name"], "#{attributes["likes-count"]} ❤️ / #{attributes["dislikes-count"]} 💩 / #{attributes["plays-count"]} 🎵", attributes["url"]].join("\n")
 
       logger.info "Send random item"
 
@@ -130,12 +133,12 @@ HELP
     data = results["data"]
     top_items = data["top_items"]
 
-    stats_response = "Total #{data["likes_count"]} ❤️\nTotal #{data["plays_count"]} 🎵"
+    stats_response = "Total #{data["likes_count"]} ❤️\nTotal #{data["dislikes_count"]} 💩\nTotal #{data["plays_count"]} 🎵"
 
     if !top_items.nil? && top_items.length.positive?
       top_items_response = top_items.map.with_index do |item, index|
         <<-TOPITEM
-#{index+1}. #{shorten(item["name"], 40)} (#{item["likes_count"]} ❤️ / #{item["plays_count"]} 🎵)
+#{index+1}. #{shorten(item["name"], 40)} (#{item["likes_count"]} ❤️ / #{item["dislikes_count"]} 💩 / #{item["plays_count"]} 🎵)
 #{item["url"]}
 TOPITEM
       end.join("\n")
@@ -178,7 +181,7 @@ TOPITEM
       attributes = item["attributes"]
 
       <<-RESPONSE
-#{shorten(attributes["name"], 40)} (#{attributes["likes_count"]} ❤️ / #{attributes["plays_count"]} 🎵)
+#{shorten(attributes["name"], 40)} (#{attributes["likes_count"]} ❤️ / #{attributes["dislikes_count"]} 💩 / #{attributes["plays_count"]} 🎵)
 #{attributes["url"]}
 RESPONSE
     end.join("\n").strip
@@ -224,13 +227,49 @@ RESPONSE
       return unless liked_item.success?
 
       attributes = liked_item.parsed_response.dig("data", "attributes")
-      response = [attributes["name"], "likes: #{attributes["likes_count"]}, plays: #{attributes["plays_count"]}", attributes["url"]].join("\n")
+      response = [attributes["name"], "#{attributes["likes_count"]} ❤️ / #{attributes["dislikes_count"]} 💩 / #{attributes["plays_count"]} 🎵", attributes["url"]].join("\n")
 
       logger.info "Send liked item"
 
       signal.sendGroupMessage(response, [], group_id)
     else
       logger.info "#{sender} could not like item #{item_id}"
+
+      signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
+    end
+  end
+
+  def dislike_item(item_id)
+    unless is_integer?(item_id)
+      signal.sendGroupMessage("NEIN!", [], group_id)
+      return
+    end
+
+    dislike_request = api.dislike_item(item_id)
+    dislike_response = dislike_request.response
+    json_dislike_response = dislike_request.parsed_response
+
+    validation_error_codes = json_dislike_response&.dig("errors")&.map { |error| error.dig("meta", "code") }&.compact
+
+    if dislike_response.status.client_error? && validation_error_codes&.include?("blank")
+      logger.info "item##{item_id} does not exists"
+
+      signal.sendGroupMessage("Diese ID wurde nicht gefunden!", [], group_id)
+    elsif dislike_response.status.success?
+      logger.info "#{sender} disliked #{item_id}"
+
+      disliked_item = api.get_item(item_id)
+
+      return unless disliked_item.success?
+
+      attributes = disliked_item.parsed_response.dig("data", "attributes")
+      response = [attributes["name"], "#{attributes["likes_count"]} ❤️ / #{attributes["dislikes_count"]} 💩 / #{attributes["plays_count"]} 🎵", attributes["url"]].join("\n")
+
+      logger.info "Send disliked item"
+
+      signal.sendGroupMessage(response, [], group_id)
+    else
+      logger.info "#{sender} could not dislike item #{item_id}"
 
       signal.sendGroupMessage("ACHTUNG! Ein großes Problem ist aufgetreten!", [], group_id)
     end
