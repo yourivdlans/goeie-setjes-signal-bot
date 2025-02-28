@@ -37,9 +37,9 @@ class Main
   rescue DBus::Error
     sleep 1
 
-    logger.info "Still trying to attach to dbus..."
+    logger.info "Retry attempt ##{retries + 1}, still trying to attach to dbus..."
 
-    retry if (retries += 1) < 20
+    retry if (retries += 1) < 120
   end
 
   def handle_messages
