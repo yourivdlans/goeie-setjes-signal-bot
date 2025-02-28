@@ -39,4 +39,4 @@ RUN bundle config set --local without 'test' \
 
 ADD . /app
 
-ENTRYPOINT ["/app/run.sh"]
+ENTRYPOINT "./run.sh"
