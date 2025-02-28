@@ -18,8 +18,6 @@ class Main
     logger.info "Attaching to dbus..."
 
     setup
-    handle_messages
-    start_loop
   end
 
   private
@@ -33,6 +31,9 @@ class Main
     @signal = signal_service.object("/org/asamk/Signal")
     @signal.introspect
     @signal.default_iface = "org.asamk.Signal"
+
+    handle_messages
+    start_loop
   rescue DBus::Error
     sleep 1
 
