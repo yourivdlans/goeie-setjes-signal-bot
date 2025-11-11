@@ -94,6 +94,16 @@ ssh dokku@server enter goeie-setjes-signal-bot
 signal-cli link -n "Goeie Setjes bot"
 ```
 
+## Link Signal account on dokku when container cannot be started
+
+```bash
+ssh dokku@server docker-options:add goeie-setjes-signal-bot run "--entrypoint /usr/bin/env"
+ssh dokku@server 'run goeie-setjes-signal-bot -- signal-cli link --name "Goeie Setjes bot"'
+qrencode -o qrcode.png 'sgnl://linkdevice?uuid=uuid&pub_key=pub_key' && open qrcode.png
+ssh dokku@server docker-options:remove goeie-setjes-signal-bot run "--entrypoint /usr/bin/env"
+ssh dokku@server ps:start goeie-setjes-signal-bot
+```
+
 See: "Link a new device with Signal"
 
 ## How to deploy updates
