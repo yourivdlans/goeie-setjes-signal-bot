@@ -3,6 +3,7 @@ FROM ruby:3.1.4
 ARG TARGETPLATFORM
 ARG SIGNAL_CLI_VERSION=0.14.5
 ARG LIBSIGNAL_CLIENT_VERSION=0.94.4
+ARG JAVA_VERSION=25
 
 RUN apt-get update \
   && apt-get install -y dbus zip
@@ -11,7 +12,7 @@ RUN apt-get update \
     && wget -O - https://packages.adoptium.net/artifactory/api/gpg/key/public | apt-key add - \
     && echo "deb https://packages.adoptium.net/artifactory/deb $(awk -F= '/^VERSION_CODENAME/{print$2}' /etc/os-release) main" | tee /etc/apt/sources.list.d/adoptium.list \
     && apt-get update \
-    && apt-get install -y temurin-21-jre \
+    && apt-get install -y temurin-$JAVA_VERSION-jre \
     && apt-get purge -y --auto-remove \
     && rm -rf /var/lib/apt/lists/*
 
@@ -19,7 +20,9 @@ ADD https://github.com/AsamK/signal-cli/releases/download/v$SIGNAL_CLI_VERSION/s
 
 RUN tar -xzvf signal-cli-$SIGNAL_CLI_VERSION.tar.gz -C /opt \
   && rm signal-cli-$SIGNAL_CLI_VERSION.tar.gz \
-  && ln -sf /opt/signal-cli-$SIGNAL_CLI_VERSION/bin/signal-cli /usr/local/bin/
+  && ln -sf /opt/signal-cli-$SIGNAL_CLI_VERSION/bin/signal-cli /usr/local/bin/ \
+  && java -version \
+  && signal-cli --version
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
       test -f "/opt/signal-cli-$SIGNAL_CLI_VERSION/lib/libsignal-client-$LIBSIGNAL_CLIENT_VERSION.jar" \
