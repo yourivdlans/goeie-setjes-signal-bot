@@ -2,7 +2,7 @@ FROM ruby:3.1.4
 
 ARG TARGETPLATFORM
 ARG SIGNAL_CLI_VERSION=0.14.5
-ARG LIBSIGNAL_CLIENT_VERSION=0.87.4
+ARG LIBSIGNAL_CLIENT_VERSION=0.94.4
 
 RUN apt-get update \
   && apt-get install -y dbus zip
@@ -22,7 +22,8 @@ RUN tar -xzvf signal-cli-$SIGNAL_CLI_VERSION.tar.gz -C /opt \
   && ln -sf /opt/signal-cli-$SIGNAL_CLI_VERSION/bin/signal-cli /usr/local/bin/
 
 RUN if [ "$TARGETPLATFORM" = "linux/arm64" ]; then \
-      curl -LO "https://github.com/exquo/signal-libs-build/releases/download/libsignal_v$LIBSIGNAL_CLIENT_VERSION/libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz" \
+      test -f "/opt/signal-cli-$SIGNAL_CLI_VERSION/lib/libsignal-client-$LIBSIGNAL_CLIENT_VERSION.jar" \
+      && curl -LO "https://github.com/exquo/signal-libs-build/releases/download/libsignal_v$LIBSIGNAL_CLIENT_VERSION/libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz" \
       && tar -xzvf libsignal_jni.so-v$LIBSIGNAL_CLIENT_VERSION-aarch64-unknown-linux-gnu.tar.gz \
       && zip -uj /opt/signal-cli-$SIGNAL_CLI_VERSION/lib/libsignal-client-$LIBSIGNAL_CLIENT_VERSION.jar libsignal_jni.so; \
     fi
