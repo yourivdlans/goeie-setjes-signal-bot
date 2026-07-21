@@ -15,6 +15,7 @@ describe Main do
       dbus = Minitest::Mock.new
       dbus_instance = Minitest::Mock.new
       logger = Minitest::Mock.new
+      scheduler = Minitest::Mock.new
 
       session_bus.expect(:service, service, ["org.asamk.Signal"])
       service.expect(:object, signal, ["/org/asamk/Signal"])
@@ -22,6 +23,7 @@ describe Main do
       signal.expect(:default_iface=, nil, ["org.asamk.Signal"])
       signal.expect(:on_signal, nil, ["SyncMessageReceived"])
       signal.expect(:on_signal, nil, ["MessageReceived"])
+      scheduler.expect(:cron, nil, ["0 17 * * 5 Europe/Amsterdam"])
 
       dbus.expect(:new, dbus_instance, [])
       dbus_instance.expect(:<<, nil, [session_bus])
@@ -30,7 +32,7 @@ describe Main do
       logger.expect(:info, nil, ["Attaching to dbus..."])
       logger.expect(:info, nil, ["Signal bot running..."])
 
-      Main.new(session_bus: session_bus, dbus: dbus, logger: logger).run
+      Main.new(session_bus: session_bus, dbus: dbus, logger: logger, scheduler: scheduler).run
 
       session_bus.verify
       service.verify
@@ -38,6 +40,7 @@ describe Main do
       dbus.verify
       dbus_instance.verify
       logger.verify
+      scheduler.verify
     end
   end
 end
