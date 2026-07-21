@@ -47,7 +47,7 @@ class Main
 
   def schedule_weekly_party_message
     scheduler.cron("0 17 * * 5 Europe/Amsterdam") do
-      SignalBot.new(signal, nil, SignalBot.signal_group_id, nil, nil).send_weekly_party_message
+      SignalBot.new(signal, nil, SignalBot.configured_group_id, nil, nil).send_weekly_party_message
     end
   end
 

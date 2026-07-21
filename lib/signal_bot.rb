@@ -31,7 +31,7 @@ class SignalBot
     @logger ||= Logger.new(STDOUT)
   end
 
-  def self.signal_group_id
+  def self.configured_group_id
     return if config.signal_group_id.nil?
 
     config.signal_group_id.split.map(&:to_i)
@@ -46,7 +46,7 @@ class SignalBot
   end
 
   def handle_message
-    if group_id != signal_group_id
+    if group_id != self.class.configured_group_id
       logger.info "Did not receive message from configured group"
       return
     end
@@ -87,10 +87,6 @@ class SignalBot
 
   def logger
     self.class.logger
-  end
-
-  def signal_group_id
-    self.class.signal_group_id
   end
 
   def help
