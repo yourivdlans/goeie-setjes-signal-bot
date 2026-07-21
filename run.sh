@@ -5,6 +5,10 @@ DBUS_PID=""
 SIGNAL_CLI_PID=""
 RUBY_PID=""
 
+# Dokku's env-file serializer drops the leading + from numeric values.
+SIGNAL_USER_ACCOUNT="+${SIGNAL_USER_ACCOUNT#+}"
+export SIGNAL_USER_ACCOUNT
+
 # Cleanup function to terminate all processes
 # CTRL+C doesn't execute this function, so we need to use the signal
 # Example: docker kill -s INT <container_id>
@@ -41,7 +45,7 @@ trap cleanup SIGTERM SIGINT SIGQUIT
 export DBUS_SESSION_BUS_ADDRESS="unix:path=/tmp/ruby-dbus"
 DBUS_PID=$(dbus-daemon --config-file=/usr/share/dbus-1/session.conf --fork --print-pid --address="$DBUS_SESSION_BUS_ADDRESS")
 
-exec signal-cli -u $SIGNAL_USER_ACCOUNT --trust-new-identities=always daemon --dbus &
+exec signal-cli -u "$SIGNAL_USER_ACCOUNT" --trust-new-identities=always daemon --dbus &
 SIGNAL_CLI_PID=$!
 
 echo "Starting signal bot with $SIGNAL_USER_ACCOUNT..."
