@@ -78,7 +78,7 @@ class SignalBot
   end
 
   def send_weekly_party_message
-    random_item(prefix: "Lasst uns Party machen! 🎉")
+    random_item(prefix: "WOCHENENDE!! Lasst uns Party machen! 🎉")
   end
 
   private

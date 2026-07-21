@@ -127,7 +127,7 @@ describe SignalBot do
           }).
         to_return(status: 200, body: random_item.to_json)
 
-      response_message = "Lasst uns Party machen! 🎉\n\nsome item\n2 ❤️ / 0 💩 / 4 🎵\nhttps://localhost/plays/1"
+      response_message = "WOCHENENDE!! Lasst uns Party machen! 🎉\n\nsome item\n2 ❤️ / 0 💩 / 4 🎵\nhttps://localhost/plays/1"
 
       signal = Minitest::Mock.new
       signal.expect(:sendGroupMessage, nil, [response_message, [], [1, 2, 3]])
