@@ -100,6 +100,44 @@ describe SignalBot do
     end
   end
 
+  describe "when sending the weekly party message" do
+    before do
+      SignalBot.config.signal_group_id = "1 2 3"
+      SignalBot.config.public_api_endpoint = "http://localhost"
+    end
+
+    it "includes a random item" do
+      random_item = {
+        data: {
+          attributes: {
+            "fb-name" => "some item",
+            "likes-count" => "2",
+            "dislikes-count" => "0",
+            "plays-count" => "4",
+            "url" => "https://localhost/plays/1"
+          }
+        }
+      }
+
+      stub_request(:get, "http://localhost/api/random-item").
+        with(
+          headers: {
+            "Accept" => "application/vnd.api+json",
+            "Content-Type" => "application/vnd.api+json"
+          }).
+        to_return(status: 200, body: random_item.to_json)
+
+      response_message = "Lasst uns Party machen! 🎉\n\nsome item\n2 ❤️ / 0 💩 / 4 🎵\nhttps://localhost/plays/1"
+
+      signal = Minitest::Mock.new
+      signal.expect(:sendGroupMessage, nil, [response_message, [], [1, 2, 3]])
+
+      SignalBot.new(signal, nil, [1, 2, 3], nil, nil).send_weekly_party_message
+
+      signal.verify
+    end
+  end
+
   describe "when !stats is received" do
     before do
       SignalBot.config.signal_group_id = "1 2 3"

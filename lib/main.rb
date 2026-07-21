@@ -1,4 +1,5 @@
 require "dbus"
+require "rufus-scheduler"
 require "./lib/signal_bot"
 
 SignalBot.config.public_api_endpoint = ENV.fetch("GOEIE_SETJES_PUBLIC_API")
@@ -8,10 +9,11 @@ SignalBot.config.signal_group_id = ENV.fetch("SIGNAL_GROUP_ID")
 $stdout.sync = true
 
 class Main
-  def initialize(session_bus: DBus::SessionBus.instance, dbus: DBus::Main, logger: SignalBot.logger)
+  def initialize(session_bus: DBus::SessionBus.instance, dbus: DBus::Main, logger: SignalBot.logger, scheduler: Rufus::Scheduler.new)
     @session_bus = session_bus
     @dbus = dbus
     @logger = logger
+    @scheduler = scheduler
   end
 
   def run
@@ -22,7 +24,7 @@ class Main
 
   private
 
-  attr_reader :session_bus, :dbus, :signal, :logger
+  attr_reader :session_bus, :dbus, :signal, :logger, :scheduler
 
   def setup
     retries ||= 0
@@ -33,6 +35,7 @@ class Main
     @signal.default_iface = "org.asamk.Signal"
 
     handle_messages
+    schedule_weekly_party_message
     start_loop
   rescue DBus::Error
     sleep 1
@@ -40,6 +43,12 @@ class Main
     logger.info "Retry attempt ##{retries + 1}, still trying to attach to dbus..."
 
     retry if (retries += 1) < 120
+  end
+
+  def schedule_weekly_party_message
+    scheduler.cron("0 17 * * 5 Europe/Amsterdam") do
+      SignalBot.new(signal, nil, SignalBot.signal_group_id, nil, nil).send_weekly_party_message
+    end
   end
 
   def handle_messages

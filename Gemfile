@@ -13,6 +13,8 @@ gem "http", "~> 4.4"
 
 gem "dry-configurable", "~> 0.12.1"
 
+gem "rufus-scheduler", "~> 3.9"
+
 group :test do
   gem "minitest", "~> 5.14"
   gem "byebug", "~> 11.1"

@@ -14,10 +14,15 @@ GEM
       dry-core (~> 0.5, >= 0.5.0)
     dry-core (0.5.0)
       concurrent-ruby (~> 1.0)
+    et-orbi (1.4.0)
+      tzinfo
     ffi (1.15.0)
     ffi-compiler (1.0.1)
       ffi (>= 1.0.0)
       rake
+    fugit (1.13.0)
+      et-orbi (~> 1.4)
+      raabro (~> 1.4)
     hashdiff (1.0.1)
     http (4.4.1)
       addressable (~> 2.3)
@@ -31,10 +36,15 @@ GEM
       ffi-compiler (>= 1.0, < 2.0)
     minitest (5.14.4)
     public_suffix (4.0.6)
+    raabro (1.4.0)
     rake (13.0.3)
     rexml (3.2.6)
     ruby-dbus (0.23.1)
       rexml
+    rufus-scheduler (3.9.2)
+      fugit (~> 1.1, >= 1.11.1)
+    tzinfo (2.0.6)
+      concurrent-ruby (~> 1.0)
     unf (0.1.4)
       unf_ext
     unf_ext (0.0.7.7)
@@ -52,6 +62,7 @@ DEPENDENCIES
   http (~> 4.4)
   minitest (~> 5.14)
   ruby-dbus (~> 0.17)
+  rufus-scheduler (~> 3.9)
   webmock (~> 3.12)
 
 RUBY VERSION

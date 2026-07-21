@@ -31,6 +31,12 @@ class SignalBot
     @logger ||= Logger.new(STDOUT)
   end
 
+  def self.signal_group_id
+    return if config.signal_group_id.nil?
+
+    config.signal_group_id.split.map(&:to_i)
+  end
+
   def initialize(signal, sender, group_id, message, timestamp)
     @signal = signal
     @sender = sender
@@ -71,6 +77,10 @@ class SignalBot
     end
   end
 
+  def send_weekly_party_message
+    random_item(prefix: "Lasst uns Party machen! 🎉")
+  end
+
   private
 
   attr_reader :signal, :sender, :group_id, :message, :timestamp
@@ -80,9 +90,7 @@ class SignalBot
   end
 
   def signal_group_id
-    return if self.class.config.signal_group_id.nil?
-
-    self.class.config.signal_group_id.split.map(&:to_i)
+    self.class.signal_group_id
   end
 
   def help
@@ -102,12 +110,13 @@ HELP
     signal.sendGroupMessage(response.strip, [], group_id)
   end
 
-  def random_item
+  def random_item(prefix: nil)
     random_item = api.get_random_item
 
     if random_item.success?
       attributes = random_item.parsed_response.dig("data", "attributes")
-      response = [attributes["fb-name"], "#{attributes["likes-count"]} ❤️ / #{attributes["dislikes-count"]} 💩 / #{attributes["plays-count"]} 🎵", attributes["url"]].join("\n")
+      item = [attributes["fb-name"], "#{attributes["likes-count"]} ❤️ / #{attributes["dislikes-count"]} 💩 / #{attributes["plays-count"]} 🎵", attributes["url"]].join("\n")
+      response = [prefix, item].compact.join("\n\n")
 
       logger.info "Send random item"
 
